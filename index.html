@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MARSAD-1 Mission Dashboard</title>
+  <meta name="description" content="Live interactive mission dashboard for MARSAD-1, Team Kanban's 3U CubeSat for harmful algal bloom monitoring along the UAE coast — SatForge UAE 2026." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%230b0a14' stroke='%234fd1a5' stroke-width='2'/><rect x='12' y='12' width='8' height='8' fill='%234fd1a5'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span></span></div>
+      <div>
+        <h1>MARSAD-1 <small>مرصد</small></h1>
+        <p class="sub">Team Kanban · SatForge UAE 2026 · Harmful Algal Bloom Watch</p>
+      </div>
+    </div>
+    <div class="top-right">
+      <div class="clock"><span class="lbl">UTC</span> <span id="utc">--:--:--</span></div>
+      <div class="sim-ctrl" role="group" aria-label="Simulation speed">
+        <span class="lbl">Time warp</span>
+        <button data-warp="1">1×</button>
+        <button data-warp="10">10×</button>
+        <button data-warp="60" class="active">60×</button>
+        <button data-warp="300">300×</button>
+      </div>
+      <button id="serialBtn" class="btn-ghost" title="Stream live telemetry from the ESP32 prototype over USB (Chrome/Edge)">Connect prototype (USB)</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <a href="#ops">Operations</a>
+    <a href="#telemetry">Telemetry</a>
+    <a href="#bloom">Bloom watch</a>
+    <a href="#conops">CONOPS</a>
+    <a href="#budgets">Budgets</a>
+    <a href="#components">Components</a>
+    <a href="#mission">Mission &amp; team</a>
+  </nav>
+
+  <main>
+    <section class="kpis" aria-label="Key mission figures">
+      <div class="kpi"><span class="k-lbl">Mode</span><span class="k-val" id="kMode">—</span><span class="k-sub" id="kModeSub">—</span></div>
+      <div class="kpi"><span class="k-lbl">Battery SoC</span><span class="k-val" id="kSoc">—</span><span class="k-sub" id="kBus">—</span></div>
+      <div class="kpi"><span class="k-lbl">Power margin</span><span class="k-val good">+2.68 W</span><span class="k-sub">6.60 W gen · 3.92 W load</span></div>
+      <div class="kpi"><span class="k-lbl">Mass</span><span class="k-val">0.845 kg</span><span class="k-sub">of 4.00 kg (3U)</span></div>
+      <div class="kpi"><span class="k-lbl">Cost</span><span class="k-val">1,420 AED</span><span class="k-sub">of 3,000 AED</span></div>
+      <div class="kpi"><span class="k-lbl">Data / day</span><span class="k-val">75 MB</span><span class="k-sub">2 GB onboard · 1.42 MB/day sent</span></div>
+    </section>
+
+    <section id="ops" class="grid ops">
+      <div class="card map-card">
+        <div class="card-h">
+          <h2>Live orbit &amp; ground track</h2>
+          <span class="chip" id="srcChip">SIMULATED</span>
+        </div>
+        <div id="orbitMap" class="map" role="img" aria-label="Map showing the satellite ground track"></div>
+        <div class="legend">
+          <span><i style="background:#4fd1a5"></i>Satellite</span>
+          <span><i style="background:#7c9cff"></i>Ground station mask (10°)</span>
+          <span><i style="background:#f5b941"></i>Imaging target (UAE waters)</span>
+          <span><i class="dash"></i>Next orbit</span>
+        </div>
+      </div>
+      <div class="card status-card">
+        <div class="card-h"><h2>Spacecraft state</h2></div>
+        <dl class="state">
+          <div><dt>Latitude</dt><dd id="sLat">—</dd></div>
+          <div><dt>Longitude</dt><dd id="sLon">—</dd></div>
+          <div><dt>Altitude</dt><dd>550 km</dd></div>
+          <div><dt>Velocity</dt><dd>7.59 km/s</dd></div>
+          <div><dt>Illumination</dt><dd id="sSun">—</dd></div>
+          <div><dt>GS elevation</dt><dd id="sEl">—</dd></div>
+          <div><dt>Orbit #</dt><dd id="sOrbit">—</dd></div>
+          <div><dt>Next UAE pass</dt><dd id="sNext">—</dd></div>
+        </dl>
+        <h3>Subsystems</h3>
+        <ul class="subs" id="subsList"></ul>
+        <h3>Event log</h3>
+        <ol class="log" id="eventLog"></ol>
+      </div>
+    </section>
+
+    <section id="telemetry" class="grid tele">
+      <div class="card"><div class="card-h"><h2>Battery state of charge</h2><span class="unit">%</span></div><div class="chart-box"><canvas id="chSoc"></canvas></div></div>
+      <div class="card"><div class="card-h"><h2>Power: generated vs consumed</h2><span class="unit">W</span></div><div class="chart-box"><canvas id="chPower"></canvas></div></div>
+      <div class="card"><div class="card-h"><h2>Temperatures</h2><span class="unit">°C</span></div><div class="chart-box"><canvas id="chTemp"></canvas></div></div>
+      <div class="card"><div class="card-h"><h2>Onboard storage used</h2><span class="unit">MB</span></div><div class="chart-box"><canvas id="chData"></canvas></div></div>
+    </section>
+
+    <section id="bloom" class="grid bloom">
+      <div class="card map-card">
+        <div class="card-h">
+          <h2>Bloom watch — chlorophyll-a (NDCI) map</h2>
+          <span class="chip warn">DEMO DATA</span>
+        </div>
+        <div id="bloomMap" class="map" role="img" aria-label="Map of simulated chlorophyll-a concentration in UAE waters"></div>
+        <div class="scale" aria-hidden="true">
+          <span>Low</span><div class="bar"></div><span>Bloom</span>
+          <span class="muted">chl-a 0 → 30+ mg/m³</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Coastal asset alerts</h2></div>
+        <p class="muted small">Alerts trigger when mapped chl-a within 15 km of an asset exceeds 10 mg/m³ (watch) or 20 mg/m³ (warning). Values shown are a seeded demo field until MARSAD-1 prototype imagery is processed.</p>
+        <table class="alerts" id="alertTable">
+          <thead><tr><th>Asset</th><th>Peak chl-a</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <button class="btn-ghost" id="rescanBtn">Simulate next daily pass</button>
+        <h3>How detection works</h3>
+        <ol class="howto">
+          <li>AS7341 samples water-leaving light at 445–680 nm + NIR during the 10-min nadir window.</li>
+          <li>ESP32-S3 computes NDCI = (R<sub>708</sub> − R<sub>665</sub>) / (R<sub>708</sub> + R<sub>665</sub>) onboard.</li>
+          <li>Pixels above threshold are tagged; a compact alert packet goes down over LoRa at the next UAE pass.</li>
+          <li>Full OV5640 images are stored and downlinked selectively for confirmation.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="conops" class="card">
+      <div class="card-h"><h2>Concept of operations — one 95-minute orbit</h2></div>
+      <div class="timeline" id="timeline"></div>
+      <div class="table-wrap">
+        <table class="matrix" id="conopsTable"></table>
+      </div>
+    </section>
+
+    <section id="budgets" class="grid budgets">
+      <div class="card"><div class="card-h"><h2>Power by subsystem</h2><span class="unit">mW</span></div><div class="chart-box tall"><canvas id="chPowSub"></canvas></div></div>
+      <div class="card"><div class="card-h"><h2>Energy per orbit by mode</h2><span class="unit">mWh</span></div><div class="chart-box tall"><canvas id="chEnergyMode"></canvas></div></div>
+      <div class="card"><div class="card-h"><h2>Mass by subsystem</h2><span class="unit">g</span></div><div class="chart-box tall"><canvas id="chMass"></canvas></div></div>
+      <div class="card"><div class="card-h"><h2>Cost by subsystem</h2><span class="unit">AED</span></div><div class="chart-box tall"><canvas id="chCost"></canvas></div></div>
+      <div class="card span2">
+        <div class="card-h"><h2>Margins</h2></div>
+        <div class="margins" id="margins"></div>
+      </div>
+    </section>
+
+    <section id="components" class="card">
+      <div class="card-h">
+        <h2>Bill of materials</h2>
+        <label class="filter">Subsystem
+          <select id="subFilter"><option value="">All</option></select>
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table class="bom" id="bomTable"></table>
+      </div>
+    </section>
+
+    <section id="mission" class="grid mission">
+      <div class="card">
+        <div class="card-h"><h2>Mission statement</h2></div>
+        <dl class="ms" id="missionDl"></dl>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Team Kanban</h2></div>
+        <ul class="team" id="teamList"></ul>
+        <h3>Prototype link</h3>
+        <p class="muted small">Flash <code>firmware/marsad_telemetry.ino</code> to the ESP32-S3 prototype, plug it in over USB and press <b>Connect prototype</b>. The dashboard switches from simulated to live telemetry (Web Serial, Chrome/Edge).</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>MARSAD-1 · Team Kanban (BSSDT4) · SatForge UAE 2026 National University Satellite Engineering Challenge. Orbit and telemetry are simulated from the team's design budgets unless a prototype is connected. Map tiles © Esri, © OpenStreetMap contributors.</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
