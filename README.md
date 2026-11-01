@@ -28,6 +28,10 @@ The poster hero image was generated with ChatGPT image generation; the simulatio
 
 | Section | Contents |
 |---|---|
+| Header | Mission name, link state (SIM / LIVE · USB / STALE / LINK LOST), last-packet age, active-alarm badge, mission UTC |
+| Status | Eight status tiles (mode, SoC, bus voltage, battery/internal/panel temperature, load, storage) with units, limits, a gauge with nominal/warning/critical zones and a text status word |
+| Alarms & readings | Latched alarms with UTC timestamps and acknowledge, alarm history, fault injection (low battery, cold battery, link loss, sensor glitch), and a latest-readings table with limits, status and per-field age |
+| Data contract | The JSON-lines packet format (fields, types, units, limits, required) shared by the simulator, the Tinkercad sketch and the ESP32-S3 firmware |
 | Operations | Live ground track (SSO propagator), spacecraft state, eclipse, Abu Dhabi ground-station passes, current CONOPS mode, subsystem status, event log |
 | Telemetry | Battery state of charge, generated vs consumed power, internal/battery/panel temperatures, onboard storage — simulated from the design budgets, or live from the prototype over USB |
 | Bloom watch | Chlorophyll-a (NDCI) map over UAE waters and alert status for desalination plants and fisheries (demo field until prototype imagery is processed) |
@@ -37,6 +41,12 @@ The poster hero image was generated with ChatGPT image generation; the simulatio
 | Mission & team | Mission statement, success criteria, orbit, team roles |
 
 Time warp (1×–300×) speeds the simulation up so a full orbit can be watched in a few minutes.
+
+**Status colours:** green = nominal, amber = warning, red = critical, grey = stale or no data, violet = invalid value. The status is always written out as well, so colour is never the only cue.
+A field goes stale 3 s after its last update; no packets for 3 s marks the link STALE and for 10 s LINK LOST.
+Values outside the sensor's physical range or of the wrong type are flagged INVALID and never plotted. Chart lines break where data is missing.
+
+**Testing:** use the fault-injection buttons. They act on the simulated spacecraft, so the dashboard only sees the resulting packets.
 
 ## Design summary
 
@@ -70,7 +80,7 @@ JSON telemetry the dashboard reads.
 ## Prototype link
 
 `firmware/marsad_telemetry/marsad_telemetry.ino` runs on the ESP32-S3 and prints one JSON line per
-second (`soc`, `v`, `load`, `tint`, `tbat`, `ndci`, `heater`). Open the dashboard in Chrome or Edge,
+second following the data contract (`soc`, `v`, `load`, `tint`, `tbat`, `ndci`, `heater`, …). Open the dashboard in Chrome or Edge,
 plug the board in, and press **Connect prototype (USB)** — the telemetry panels switch to live data.
 
 ## Team

@@ -1,4 +1,5 @@
-import { MISSION, TEAM, MODES, COMPONENTS, BUDGET, DATA_BUDGET, GROUND_STATION, ASSETS, TARGET_BOX } from "./data.js";
+import { MISSION, TEAM, MODES, COMPONENTS, BUDGET, DATA_BUDGET, GROUND_STATION, ASSETS, TARGET_BOX, CONTRACT, STALE_SEC, LOST_SEC } from "./data.js";
+import { FIELD, STATUS_TEXT, formatValue, fieldStatus, limitText } from "./health.js";
 import { makeOrbit, stateAt, elevationDeg, visibilityRadiusKm, haversineKm, splitTrack } from "./orbit.js";
 import { renderBloom } from "./bloom.js";
 
@@ -28,31 +29,69 @@ Chart.defaults.animation = false;
 const orbit = makeOrbit({ altitudeKm: 550, inclinationDeg: 97.6, ltanHours: 22.5, epoch: new Date(Date.UTC(2026, 10, 1)) });
 let simTime = new Date();
 let warp = 60;
-let live = null; // latest telemetry object from the prototype, when connected
-const sim = { soc: 78, tInt: 18, tBat: 14, tPanel: 20, storageMB: 412, mode: null, eclipse: null, inPass: false, lastSample: 0 };
+const sim = { soc: 78, tInt: 18, tBat: 14, tPanel: 20, storageMB: 412, heater: false, mode: null, eclipse: null, inPass: false, lastSample: 0 };
+const faults = { lowBatt: false, cold: false, link: false, glitch: false };
 const MAX_POINTS = 200;
+const bootAt = performance.now();
 
-function currentMode(st, el) {
-  if (st.eclipse) return "safe";
+// Same priority order as the flight software: power safety first, then the ground pass, then imaging.
+function currentMode(st, el, soc) {
+  if (st.eclipse || soc < 20) return "safe";
   if (el > GROUND_STATION.minElevDeg) return "gs";
   const c = { lat: (TARGET_BOX.latMin + TARGET_BOX.latMax) / 2, lon: (TARGET_BOX.lonMin + TARGET_BOX.lonMax) / 2 };
   if (haversineKm(st, c) < 900) return "nadir";
   return "sun";
 }
 
-function stepPhysics(dtSec, mode, eclipse) {
+function stepPhysics(dtSec, realDtSec, mode, eclipse) {
   const jitter = () => 1 + (Math.random() - 0.5) * 0.06;
-  const load = modeLoadW[MODE_IDX[mode]] * jitter();
+  const load = modeLoadW[MODE_IDX[mode]] * jitter() + (sim.heater ? 1.0 : 0);
   const gen = eclipse ? 0 : GEN_PEAK_W * SUN_FACTOR[mode] * jitter();
   sim.soc = Math.min(100, Math.max(0, sim.soc + ((gen * 0.92 - load) * dtSec) / 3600 / BUDGET.batteryWh * 100));
   const relax = (cur, target, tauMin) => cur + (target - cur) * (1 - Math.exp(-dtSec / (tauMin * 60)));
+  const force = (cur, target, tauSec) => cur + (target - cur) * (1 - Math.exp(-realDtSec / tauSec));
   sim.tInt = relax(sim.tInt, eclipse ? 6 : 24, 25);
-  const heaterOn = mode === "safe" && sim.tBat < 8;
-  sim.tBat = relax(sim.tBat, heaterOn ? 12 : sim.tInt - 2, 30);
+  if (sim.tBat < 6) sim.heater = true;
+  else if (sim.tBat > 10) sim.heater = false;
+  sim.tBat = relax(sim.tBat, sim.heater ? 14 : sim.tInt - 2, 30);
   sim.tPanel = relax(sim.tPanel, eclipse ? -35 : 62, 8);
   const rateMBmin = mode === "nadir" ? 0.53 : mode === "gs" ? -1.8 : 0.003;
   sim.storageMB = Math.max(40, sim.storageMB + (rateMBmin * dtSec) / 60);
-  return { load, gen, heaterOn };
+  // injected faults act on the spacecraft model in real seconds, so they show up at any time warp
+  if (faults.lowBatt) sim.soc = force(sim.soc, 12, 2);
+  if (faults.cold) {
+    sim.heater = true;
+    sim.tBat = force(sim.tBat, -6, 5);
+  }
+  return { load, gen };
+}
+
+// What the spacecraft would downlink this second, following the data contract.
+function simPacket(st, mode, p) {
+  const pkt = {
+    t: Math.round((performance.now() - bootAt) / 1000),
+    mode,
+    soc: +sim.soc.toFixed(1),
+    v: +(6.0 + (2.4 * sim.soc) / 100).toFixed(2),
+    gen: +p.gen.toFixed(2),
+    load: +p.load.toFixed(2),
+    tbat: +sim.tBat.toFixed(1),
+    tint: +sim.tInt.toFixed(1),
+    tpanel: +sim.tPanel.toFixed(1),
+    storage: Math.round(sim.storageMB),
+    sun: st.eclipse ? 2 : 86,
+    lat: +st.lat.toFixed(2),
+    lon: +st.lon.toFixed(2),
+    heater: sim.heater,
+    antenna: true,
+  };
+  if (mode === "nadir") pkt.ndci = +(0.05 + 0.04 * Math.sin(simTime.getTime() / 4e5)).toFixed(3);
+  if (faults.glitch) {
+    pkt.soc = 137.5; // impossible value → INVALID
+    pkt.v = "ERR"; // wrong type → INVALID
+    delete pkt.tbat; // dropped field → goes STALE
+  }
+  return pkt;
 }
 
 // ---------- orbit map ----------
@@ -92,6 +131,30 @@ function findNextPass(from) {
 }
 
 // ---------- telemetry charts ----------
+// Dashed horizontal lines for warning / critical limits.
+Chart.register({
+  id: "limitLines",
+  afterDatasetsDraw(chart, _args, opts) {
+    const { ctx, chartArea: a, scales: { y } } = chart;
+    (opts.lines || []).forEach((l) => {
+      const py = y.getPixelForValue(l.y);
+      if (py < a.top || py > a.bottom) return;
+      ctx.save();
+      ctx.strokeStyle = l.color;
+      ctx.fillStyle = l.color;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(a.left, py);
+      ctx.lineTo(a.right, py);
+      ctx.stroke();
+      ctx.font = "10px 'JetBrains Mono', monospace";
+      ctx.fillText(l.label, a.left + 4, py - 3);
+      ctx.restore();
+    });
+  },
+});
+const WARN = "#f5b941", CRIT = "#ff5d6c";
+
 function lineChart(id, datasets, opts = {}) {
   return new Chart($(id), {
     type: "line",
@@ -101,21 +164,21 @@ function lineChart(id, datasets, opts = {}) {
       responsive: true,
       interaction: { mode: "index", intersect: false },
       scales: { x: { ticks: { maxTicksLimit: 8 } }, y: opts.y || {} },
-      plugins: { legend: { display: datasets.length > 1 } },
+      plugins: { legend: { display: datasets.length > 1 }, limitLines: { lines: opts.limits || [] } },
     },
   });
 }
-const chSoc = lineChart("chSoc", [{ label: "SoC", borderColor: "#4fd1a5", fill: true, backgroundColor: "rgba(79,209,165,0.08)" }], { y: { min: 0, max: 100 } });
+const chSoc = lineChart("chSoc", [{ label: "SoC", borderColor: "#4fd1a5", fill: true, backgroundColor: "rgba(79,209,165,0.08)" }], { y: { min: 0, max: 100 }, limits: [{ y: 40, color: WARN, label: "warn 40 %" }, { y: 20, color: CRIT, label: "crit 20 % → SAFE" }] });
 const chPower = lineChart("chPower", [
   { label: "Generated", borderColor: "#f5b941" },
   { label: "Consumed", borderColor: "#ff8fb1" },
-]);
+], { limits: [{ y: 4.5, color: WARN, label: "load warn 4.5 W" }] });
 const chTemp = lineChart("chTemp", [
   { label: "Internal", borderColor: "#7c9cff" },
   { label: "Battery", borderColor: "#4fd1a5" },
   { label: "Solar panel", borderColor: "#f5b941" },
-]);
-const chData = lineChart("chData", [{ label: "Storage", borderColor: "#a07cff", fill: true, backgroundColor: "rgba(160,124,255,0.08)" }], { y: { min: 0 } });
+], { limits: [{ y: 45, color: CRIT, label: "battery crit 45 °C" }, { y: 5, color: WARN, label: "battery warn 5 °C" }, { y: 0, color: CRIT, label: "battery crit 0 °C" }] });
+const chData = lineChart("chData", [{ label: "Storage", borderColor: "#a07cff", fill: true, backgroundColor: "rgba(160,124,255,0.08)" }], { y: { min: 0 }, limits: [{ y: 1600, color: WARN, label: "warn 1600 MB" }] });
 const teleCharts = [chSoc, chPower, chTemp, chData];
 
 function pushSample(label, values) {
@@ -229,38 +292,239 @@ function renderMission() {
   $("teamList").innerHTML = TEAM.map((t) => `<li><div class="avatar">${t.name.split(" ").map((p) => p[0]).join("")}</div><div>${t.name}<span>${t.role}</span></div></li>`).join("");
 }
 
+// ---------- ground segment: packets in, status out ----------
+let source = "sim"; // "sim" until a prototype is connected over USB, then "live"
+let latest = {}; // key → { v, at }: newest value of every field and when it arrived
+let lastPktAt = null;
+let pktCount = 0;
+let rejected = 0;
+let newSinceSample = false;
+let warming = false;
+
+function ingest(pkt) {
+  if (faults.link) return; // nothing reaches the ground station
+  const now = performance.now();
+  for (const [k, v] of Object.entries(pkt)) if (FIELD[k]) latest[k] = { v, at: now };
+  lastPktAt = now;
+  pktCount++;
+  newSinceSample = true;
+}
+
+// Value of a field if it is fresh and valid, else null (so charts show a gap).
+const fresh = (key) => {
+  const f = fieldStatus(latest, key, performance.now());
+  return f.status === "ok" || f.status === "warn" || f.status === "crit" ? latest[key].v : null;
+};
+
+// Status tiles
+const TILES = [
+  { key: "mode", label: "Mode" },
+  { key: "soc", label: "Battery SoC" },
+  { key: "v", label: "Bus voltage" },
+  { key: "tbat", label: "Battery temp" },
+  { key: "load", label: "Load power" },
+  { key: "tint", label: "Internal temp" },
+  { key: "tpanel", label: "Solar panel temp" },
+  { key: "storage", label: "Storage used" },
+];
+function gaugeZones(c) {
+  const [lo, hi] = c.scale;
+  const pct = (x) => ((Math.min(hi, Math.max(lo, x)) - lo) / (hi - lo)) * 100;
+  const zone = (cls, a, b) => `<i class="zone ${cls}" style="left:${pct(a)}%;width:${pct(b) - pct(a)}%"></i>`;
+  let z = c.nominal ? zone("n", c.nominal[0], c.nominal[1]) : "";
+  if (c.warnLow != null) z += zone("w", c.critLow ?? lo, c.warnLow);
+  if (c.critLow != null) z += zone("c", lo, c.critLow);
+  if (c.warnHigh != null) z += zone("w", c.warnHigh, c.critHigh ?? hi);
+  if (c.critHigh != null) z += zone("c", c.critHigh, hi);
+  return z;
+}
+$("tiles").innerHTML = TILES.map(({ key, label }) => {
+  const c = FIELD[key];
+  return `<div class="tile st-missing" id="tile-${key}" role="group" aria-label="${label}">
+    <div class="t-top"><span class="t-lbl">${label}</span><span class="t-st" id="tst-${key}">No data</span></div>
+    <div class="t-val"><span id="tv-${key}">—</span>${c.unit ? `<small>${c.unit}</small>` : ""}</div>
+    ${c.scale ? `<div class="gauge" aria-hidden="true">${gaugeZones(c)}<i class="mark" id="tm-${key}" style="left:0%"></i></div>` : ""}
+    <div class="t-sub" id="tsub-${key}"></div>
+    <div class="t-lim">${c.type === "enum" ? "sun · nadir · gs · safe" : limitText(c)}</div>
+  </div>`;
+}).join("");
+
+function tileSub(key, st) {
+  const gen = fresh("gen");
+  const load = fresh("load");
+  switch (key) {
+    case "mode":
+      return st.status === "ok" ? (sim.eclipse ? "in Earth's shadow" : sim.inPass ? "over Abu Dhabi GS" : "sunlit") : st.reason;
+    case "soc":
+      if (st.status === "crit") return "SAFE mode enforced";
+      return gen !== null && load !== null ? (gen - load >= 0 ? "charging" : "discharging") : st.reason;
+    case "tbat":
+      return fresh("heater") !== null ? `heater ${fresh("heater") ? "ON" : "OFF"}${st.reason ? " · " + st.reason : ""}` : st.reason;
+    case "load":
+      return gen !== null && load !== null ? `solar ${gen.toFixed(2)} W · net ${gen - load >= 0 ? "+" : ""}${(gen - load).toFixed(2)} W` : st.reason;
+    case "storage":
+      return fresh("storage") !== null ? `${((fresh("storage") / 2048) * 100).toFixed(0)} % of 2 GB` : st.reason;
+    default:
+      return st.reason;
+  }
+}
+
+function setStatusClass(el, status) {
+  el.className = `${el.className.replace(/\bst-\w+/g, "").trim()} st-${status}`;
+}
+
+// Alarms latch on entry to warn/crit/invalid and stay in the history, with times, after they clear.
+const alarms = []; // { key, level, msg, raised, cleared, ack }
+const active = {}; // key → alarm
+const LEVEL_TEXT = { warn: "WARNING", crit: "CRITICAL", invalid: "INVALID" };
+function raise(key, level, msg) {
+  const cur = active[key];
+  if (cur && cur.level === level) return;
+  if (cur) cur.cleared = new Date(simTime);
+  const a = { key, level, msg, raised: new Date(simTime), cleared: null, ack: false };
+  alarms.unshift(a);
+  active[key] = a;
+  if (alarms.length > 60) alarms.pop();
+  if (!warming) logEvent(simTime, `<span class="st-${level}">${LEVEL_TEXT[level]}</span> ${msg}`);
+}
+function clear(key) {
+  const cur = active[key];
+  if (!cur) return;
+  cur.cleared = new Date(simTime);
+  delete active[key];
+  if (!warming) logEvent(simTime, `Cleared: ${cur.msg}`);
+}
+
+function linkState(nowMs) {
+  if (lastPktAt === null) return { status: "missing", label: "NO DATA" };
+  const age = (nowMs - lastPktAt) / 1000;
+  if (age > LOST_SEC) return { status: "crit", label: "LINK LOST", age };
+  if (age > STALE_SEC) return { status: "stale", label: "STALE", age };
+  return { status: "ok", label: source === "live" ? "LIVE · USB" : "SIM", age };
+}
+
+function refreshStatus() {
+  const now = performance.now();
+  const link = linkState(now);
+  const pill = $("linkPill");
+  pill.textContent = link.label;
+  setStatusClass(pill, link.status === "stale" ? "warn" : link.status);
+  $("pktAge").textContent = link.age === undefined ? "—" : link.age < 60 ? `${link.age.toFixed(1)} s ago` : `${Math.floor(link.age / 60)} min ago`;
+  $("srcChip").textContent = link.status === "crit" ? "LINK LOST" : source === "live" ? "LIVE · PROTOTYPE" : "SIMULATED";
+  $("pktMeta").textContent = `${pktCount} packets · ${rejected} rejected · ${source === "live" ? "USB prototype" : "simulator"}`;
+
+  if (link.status === "crit") raise("link", "crit", `Telemetry link lost — no packets for ${LOST_SEC} s`);
+  else if (link.status === "stale") raise("link", "warn", `Telemetry stale — no packets for ${STALE_SEC} s`);
+  else clear("link");
+
+  const statuses = {};
+  CONTRACT.forEach((c) => {
+    const st = fieldStatus(latest, c.key, now);
+    statuses[c.key] = st;
+    const val = latest[c.key]?.v;
+    if (st.status === "warn" || st.status === "crit") raise(c.key, st.status, `${c.label} ${formatValue(c, val)}${c.unit ? " " + c.unit : ""} ${st.reason}`);
+    else if (st.status === "invalid") raise(c.key, "invalid", `${c.label} ${st.reason}`);
+    else if (st.status === "missing" && c.required && lastPktAt !== null) raise(c.key, "warn", `${c.label} missing from packets (required field)`);
+    else if (st.status === "ok") clear(c.key);
+    // a stale field keeps its last alarm state; the link alarm covers a silent spacecraft
+  });
+
+  TILES.forEach(({ key }) => {
+    const c = FIELD[key];
+    const st = statuses[key];
+    const val = latest[key]?.v;
+    setStatusClass($(`tile-${key}`), st.status);
+    $(`tst-${key}`).textContent = STATUS_TEXT[st.status];
+    $(`tv-${key}`).textContent = key === "mode" && MODE_LABEL[val] ? MODE_LABEL[val] : formatValue(c, val);
+    $(`tsub-${key}`).textContent = tileSub(key, st);
+    const m = document.getElementById(`tm-${key}`);
+    if (m && typeof val === "number" && Number.isFinite(val)) {
+      const [lo, hi] = c.scale;
+      m.style.left = `${((Math.min(hi, Math.max(lo, val)) - lo) / (hi - lo)) * 100}%`;
+    }
+  });
+
+  $("readTable").innerHTML = `<thead><tr><th>Signal</th><th class="num">Value</th><th>Unit</th><th>Limits</th><th>Status</th><th class="num">Age</th></tr></thead><tbody>${CONTRACT.map((c) => {
+    const st = statuses[c.key];
+    return `<tr class="st-${st.status}"><td>${c.label}</td><td>${formatValue(c, latest[c.key]?.v)}</td><td>${c.unit || ""}</td><td class="lim">${limitText(c)}</td><td class="stc st-${st.status}" title="${st.reason}">${STATUS_TEXT[st.status]}</td><td class="age">${st.age == null ? "—" : st.age.toFixed(1) + " s"}</td></tr>`;
+  }).join("")}</tbody>`;
+
+  renderAlarms();
+}
+
+function renderAlarms() {
+  const act = alarms.filter((a) => !a.cleared);
+  const crit = act.some((a) => a.level === "crit" && !a.ack);
+  const badge = $("alarmBadge");
+  badge.textContent = act.length ? `${act.length} alarm${act.length > 1 ? "s" : ""}` : "No alarms";
+  setStatusClass(badge, !act.length ? "ok" : crit ? "crit" : "warn");
+  $("alarmActive").innerHTML = act.length
+    ? act.map((a) => `<li class="st-${a.level}${a.ack ? " acked" : ""}"><span class="lvl">${LEVEL_TEXT[a.level]}</span><span class="msg">${a.msg}</span><time>${hhmmss(a.raised)}</time></li>`).join("")
+    : `<li class="none">All monitored values nominal</li>`;
+  $("alarmLog").innerHTML = alarms
+    .slice(0, 25)
+    .map((a) => `<li><b>${hhmmss(a.raised)}</b> <span class="lvl st-${a.level}">${LEVEL_TEXT[a.level]}</span>${a.msg}${a.cleared ? ` <span class="st-ok">· cleared ${hhmmss(a.cleared)}</span>` : ""}</li>`)
+    .join("");
+}
+$("ackBtn").addEventListener("click", () => {
+  alarms.forEach((a) => (a.ack = true));
+  renderAlarms();
+});
+
+// Fault injection
+const FAULT_TEXT = { lowBatt: "Low battery", cold: "Cold battery (heater fault)", link: "Link loss", glitch: "Sensor glitch" };
+document.querySelectorAll("[data-fault]").forEach((b) =>
+  b.addEventListener("click", () => {
+    const f = b.dataset.fault;
+    faults[f] = !faults[f];
+    b.setAttribute("aria-pressed", String(faults[f]));
+    logEvent(simTime, `<b>Test</b> fault ${faults[f] ? "injected" : "removed"}: ${FAULT_TEXT[f]}`);
+    refreshStatus();
+  })
+);
+$("clearFaults").addEventListener("click", () => {
+  Object.keys(faults).forEach((f) => (faults[f] = false));
+  document.querySelectorAll("[data-fault]").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  Object.assign(sim, { soc: Math.max(sim.soc, 78), tBat: Math.max(sim.tBat, 14), heater: false });
+  logEvent(simTime, "<b>Test</b> all faults cleared, spacecraft model reset to nominal");
+});
+
+// Data contract card
+function renderContract() {
+  $("contractTable").innerHTML = `<thead><tr><th>Field</th><th>Type</th><th>Unit</th><th>Limits</th><th>Req.</th><th>Meaning</th></tr></thead><tbody>${CONTRACT.map(
+    (c) => `<tr><td>${c.key}</td><td>${c.type}</td><td>${c.unit || "—"}</td><td class="lim">${limitText(c)}</td><td>${c.required ? "yes" : ""}</td><td class="desc">${c.desc}</td></tr>`
+  ).join("")}</tbody>`;
+  $("examplePkt").textContent = JSON.stringify({ t: 5412, mode: "nadir", soc: 82.4, v: 7.98, gen: 3.61, load: 2.95, tbat: 17.2, tint: 21.6, tpanel: 48.3, storage: 436, sun: 86, ndci: 0.071, lat: 25.12, lon: 55.4, heater: false, antenna: true }, null, 1);
+}
+
 // ---------- main loop ----------
 function tick(realDtSec) {
   const dt = realDtSec * warp;
   simTime = new Date(simTime.getTime() + dt * 1000);
   const st = stateAt(orbit, simTime);
   const el = elevationDeg(st.ecef, GROUND_STATION);
-  const mode = live?.mode && MODE_IDX[live.mode] !== undefined ? live.mode : currentMode(st, el);
+  const simMode = currentMode(st, el, sim.soc);
 
-  if (sim.mode && mode !== sim.mode) logEvent(simTime, `${MODE_LABEL[sim.mode]} → <b>${MODE_LABEL[mode]}</b>`);
-  if (sim.eclipse !== null && st.eclipse !== sim.eclipse) logEvent(simTime, st.eclipse ? "Eclipse entry" : "Eclipse exit — charging");
+  if (sim.eclipse !== null && st.eclipse !== sim.eclipse && !warming) logEvent(simTime, st.eclipse ? "Eclipse entry" : "Eclipse exit — charging");
   const inPass = el > GROUND_STATION.minElevDeg;
   if (inPass !== sim.inPass) {
-    logEvent(simTime, inPass ? `AOS ${GROUND_STATION.name} — downlinking bloom alerts` : `LOS ${GROUND_STATION.name}`);
+    if (!warming) logEvent(simTime, inPass ? `AOS ${GROUND_STATION.name} — downlinking bloom alerts` : `LOS ${GROUND_STATION.name}`);
     if (!inPass) nextPass = null;
   }
-  sim.mode = mode;
   sim.eclipse = st.eclipse;
   sim.inPass = inPass;
 
-  const p = stepPhysics(dt, mode, st.eclipse);
-  const tele = {
-    soc: live?.soc ?? sim.soc,
-    gen: live?.gen ?? p.gen,
-    load: live?.load ?? p.load,
-    tInt: live?.tint ?? sim.tInt,
-    tBat: live?.tbat ?? sim.tBat,
-    tPanel: live?.tpanel ?? sim.tPanel,
-    storage: live?.storage ?? sim.storageMB,
-  };
-  const lat = live?.lat ?? st.lat;
-  const lon = live?.lon ?? st.lon;
+  const p = stepPhysics(dt, realDtSec, simMode, st.eclipse);
+  if (source === "sim") ingest(simPacket(st, simMode, p));
 
+  // Everything below is drawn from received packets only; stale or missing fields show as gaps.
+  const pktMode = fresh("mode");
+  const mode = pktMode || sim.mode || simMode;
+  if (sim.mode && mode !== sim.mode && !warming) logEvent(simTime, `${MODE_LABEL[sim.mode]} → <b>${MODE_LABEL[mode]}</b>`);
+  sim.mode = mode;
+
+  const lat = fresh("lat") ?? st.lat;
+  const lon = fresh("lon") ?? st.lon;
   satMarker.setLatLng([lat, lon]);
   if (simTime.getTime() - lastTrackAt > 60000 * Math.max(1, warp / 10)) {
     drawTrack(simTime);
@@ -269,10 +533,6 @@ function tick(realDtSec) {
   if (!nextPass || nextPass < simTime) nextPass = findNextPass(simTime);
 
   $("utc").textContent = hhmmss(simTime);
-  $("kMode").textContent = MODE_LABEL[mode];
-  $("kModeSub").textContent = st.eclipse ? "in Earth's shadow" : inPass ? `${fmt(el, 0)}° above Abu Dhabi` : "sunlit";
-  $("kSoc").textContent = `${fmt(tele.soc, 1)}%`;
-  $("kBus").textContent = `bus ${fmt(6.4 + (1.9 * tele.soc) / 100, 2)} V · ${tele.gen - tele.load >= 0 ? "charging" : "discharging"}`;
   $("sLat").textContent = `${fmt(lat, 2)}°`;
   $("sLon").textContent = `${fmt(lon, 2)}°`;
   $("sSun").textContent = st.eclipse ? "Eclipse" : "Sunlit";
@@ -281,12 +541,14 @@ function tick(realDtSec) {
   $("sNext").textContent = inPass ? "in pass now" : nextPass ? `${hhmm(nextPass)} UTC (+${Math.round((nextPass - simTime) / 60000)} min)` : "—";
   const cur = document.getElementById("tlCursor");
   if (cur) cur.style.left = `${st.orbitPhase * 100}%`;
-  renderSubs(mode, p.heaterOn);
+  renderSubs(mode, fresh("heater") === true);
 
   sim.lastSample += dt;
-  if (sim.lastSample >= 30 || live) {
+  if (sim.lastSample >= 30 || (source === "live" && newSinceSample)) {
     sim.lastSample = 0;
-    pushSample(hhmm(simTime), [[tele.soc], [tele.gen, tele.load], [tele.tInt, tele.tBat, tele.tPanel], [tele.storage]]);
+    newSinceSample = false;
+    const label = source === "live" ? hhmmss(new Date()) : hhmm(simTime);
+    pushSample(label, [[fresh("soc")], [fresh("gen"), fresh("load")], [fresh("tint"), fresh("tbat"), fresh("tpanel")], [fresh("storage")]]);
   }
 }
 
@@ -294,9 +556,15 @@ function tick(realDtSec) {
 function warmUp() {
   const saved = warp;
   warp = 1;
+  warming = true;
   simTime = new Date(simTime.getTime() - orbit.periodSec * 1000 * 1.2);
-  for (let i = 0; i < (orbit.periodSec * 1.2) / 30; i++) tick(30);
+  for (let i = 0; i < (orbit.periodSec * 1.2) / 30; i++) {
+    tick(30);
+    lastPktAt = performance.now(); // warm-up packets all arrive "now"
+    Object.values(latest).forEach((e) => (e.at = lastPktAt));
+  }
   warp = saved;
+  warming = false;
 }
 
 document.querySelectorAll("[data-warp]").forEach((b) =>
@@ -306,7 +574,7 @@ document.querySelectorAll("[data-warp]").forEach((b) =>
   })
 );
 
-// ---------- Web Serial link to the ESP32 prototype ----------
+// ---------- Web Serial link to the prototype (ESP32-S3 firmware or the Tinkercad/Arduino sketch) ----------
 $("serialBtn").addEventListener("click", async () => {
   if (!("serial" in navigator)) {
     alert("Web Serial is not available in this browser. Use Chrome or Edge on desktop.");
@@ -315,11 +583,13 @@ $("serialBtn").addEventListener("click", async () => {
   try {
     const port = await navigator.serial.requestPort();
     await port.open({ baudRate: 115200 });
+    source = "live";
+    latest = {}; // never mix simulated values into live telemetry
+    lastPktAt = null;
     $("serialBtn").textContent = "Prototype connected";
     $("serialBtn").classList.add("live");
-    $("srcChip").textContent = "LIVE · PROTOTYPE";
     $("srcChip").classList.add("live");
-    logEvent(simTime, "<b>Prototype connected</b> over USB");
+    logEvent(simTime, "<b>Prototype connected</b> over USB — showing live packets only");
     const reader = port.readable.pipeThrough(new TextDecoderStream()).getReader();
     let buf = "";
     for (;;) {
@@ -330,8 +600,12 @@ $("serialBtn").addEventListener("click", async () => {
       while ((nl = buf.indexOf("\n")) >= 0) {
         const line = buf.slice(0, nl).trim();
         buf = buf.slice(nl + 1);
-        if (line.startsWith("{")) {
-          try { live = JSON.parse(line); } catch { /* ignore partial lines */ }
+        if (!line.startsWith("{")) continue; // EVENT lines and boot text
+        try {
+          ingest(JSON.parse(line));
+        } catch {
+          rejected++;
+          logEvent(simTime, `Rejected malformed packet (${line.length} bytes)`);
         }
       }
     }
@@ -344,6 +618,7 @@ renderConops();
 renderBudgets();
 renderBom();
 renderMission();
+renderContract();
 renderBloom({ mapId: "bloomMap", tableId: "alertTable", buttonId: "rescanBtn", tiles, tileOpts, assets: ASSETS });
 warmUp();
 drawTrack(simTime);
@@ -353,3 +628,5 @@ setInterval(() => {
   tick((now - last) / 1000);
   last = now;
 }, 1000);
+refreshStatus();
+setInterval(refreshStatus, 250);

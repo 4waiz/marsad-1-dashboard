@@ -90,3 +90,27 @@ export const ASSETS = [
 ];
 
 export const TARGET_BOX = { latMin: 22.5, latMax: 27.5, lonMin: 51.0, lonMax: 57.5 };
+
+// Telemetry data contract v1: one JSON object per line, 1 Hz, 115200 baud (USB serial / LoRa frame payload).
+// range = physically possible values (outside → INVALID); warn*/crit* = alarm limits; scale = gauge span on the tiles.
+export const CONTRACT = [
+  { key: "t", label: "Time since boot", type: "number", unit: "s", dp: 0, range: [0, 1e9], desc: "Optional; ground receive time is used when absent" },
+  { key: "mode", label: "Mode", type: "enum", values: ["sun", "nadir", "gs", "safe"], required: true, desc: "CONOPS mode chosen onboard" },
+  { key: "soc", label: "Battery SoC", type: "number", unit: "%", dp: 1, range: [0, 100], scale: [0, 100], nominal: [40, 100], warnLow: 40, critLow: 20, required: true, desc: "State of charge; <20 % forces SAFE" },
+  { key: "v", label: "Bus voltage", type: "number", unit: "V", dp: 2, range: [0, 12], scale: [6, 8.6], nominal: [7.0, 8.4], warnLow: 7.0, critLow: 6.6, critHigh: 8.5, required: true, desc: "2S Li-ion pack (INA219)" },
+  { key: "gen", label: "Solar power", type: "number", unit: "W", dp: 2, range: [0, 10], scale: [0, 7], desc: "Array output (INA219)" },
+  { key: "load", label: "Load power", type: "number", unit: "W", dp: 2, range: [0, 10], scale: [0, 7], nominal: [0, 4.5], warnHigh: 4.5, critHigh: 6.0, desc: "Total bus load (INA219)" },
+  { key: "tbat", label: "Battery temp", type: "number", unit: "°C", dp: 1, range: [-55, 125], scale: [-10, 50], nominal: [5, 40], warnLow: 5, warnHigh: 40, critLow: 0, critHigh: 45, required: true, desc: "DS18B20 on the pack; heater on <6 °C, off >10 °C" },
+  { key: "tint", label: "Internal temp", type: "number", unit: "°C", dp: 1, range: [-55, 125], scale: [-20, 70], nominal: [-5, 50], warnLow: -5, warnHigh: 50, critLow: -10, critHigh: 60, desc: "BME280 on the OBC board" },
+  { key: "tpanel", label: "Panel temp", type: "number", unit: "°C", dp: 1, range: [-100, 150], scale: [-60, 100], nominal: [-40, 80], warnLow: -40, warnHigh: 80, critLow: -50, critHigh: 95, desc: "Solar panel thermistor" },
+  { key: "storage", label: "Storage used", type: "number", unit: "MB", dp: 0, range: [0, 2048], scale: [0, 2048], nominal: [0, 1600], warnHigh: 1600, critHigh: 1900, desc: "SD card, of 2048 MB" },
+  { key: "sun", label: "Sun sensor", type: "number", unit: "%", dp: 0, range: [0, 100], desc: "Light level; <30 % = eclipse" },
+  { key: "ndci", label: "NDCI", type: "number", unit: "", dp: 3, range: [-1, 1], desc: "Chlorophyll index from AS7341 (nadir only)" },
+  { key: "lat", label: "Latitude", type: "number", unit: "°", dp: 2, range: [-90, 90], desc: "From onboard propagator" },
+  { key: "lon", label: "Longitude", type: "number", unit: "°", dp: 2, range: [-180, 180], desc: "From onboard propagator" },
+  { key: "heater", label: "Battery heater", type: "boolean", desc: "Heater relay state" },
+  { key: "antenna", label: "Antenna", type: "boolean", desc: "true once the UHF antenna has deployed" },
+];
+
+export const STALE_SEC = 3; // a field is stale this long after its last update
+export const LOST_SEC = 10; // no packets for this long = link lost

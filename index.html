@@ -22,6 +22,11 @@
       </div>
     </div>
     <div class="top-right">
+      <div class="link-status" aria-live="polite">
+        <span id="linkPill" class="pill st-missing" title="Telemetry link state">NO DATA</span>
+        <span class="lbl">Last packet</span> <span id="pktAge" class="mono">—</span>
+        <a href="#health" id="alarmBadge" class="badge" title="Active alarms">0 alarms</a>
+      </div>
       <div class="clock"><span class="lbl">UTC</span> <span id="utc">--:--:--</span></div>
       <div class="sim-ctrl" role="group" aria-label="Simulation speed">
         <span class="lbl">Time warp</span>
@@ -35,23 +40,53 @@
   </header>
 
   <nav class="tabs">
+    <a href="#status">Status</a>
+    <a href="#health">Alarms &amp; readings</a>
     <a href="#ops">Operations</a>
     <a href="#telemetry">Telemetry</a>
     <a href="#bloom">Bloom watch</a>
     <a href="#conops">CONOPS</a>
     <a href="#budgets">Budgets</a>
     <a href="#components">Components</a>
+    <a href="#contract">Data contract</a>
     <a href="#mission">Mission &amp; team</a>
   </nav>
 
   <main>
-    <section class="kpis" aria-label="Key mission figures">
-      <div class="kpi"><span class="k-lbl">Mode</span><span class="k-val" id="kMode">—</span><span class="k-sub" id="kModeSub">—</span></div>
-      <div class="kpi"><span class="k-lbl">Battery SoC</span><span class="k-val" id="kSoc">—</span><span class="k-sub" id="kBus">—</span></div>
-      <div class="kpi"><span class="k-lbl">Power margin</span><span class="k-val good">+2.68 W</span><span class="k-sub">6.60 W gen · 3.92 W load</span></div>
-      <div class="kpi"><span class="k-lbl">Mass</span><span class="k-val">0.845 kg</span><span class="k-sub">of 4.00 kg (3U)</span></div>
-      <div class="kpi"><span class="k-lbl">Cost</span><span class="k-val">1,420 AED</span><span class="k-sub">of 3,000 AED</span></div>
-      <div class="kpi"><span class="k-lbl">Data / day</span><span class="k-val">75 MB</span><span class="k-sub">2 GB onboard · 1.42 MB/day sent</span></div>
+    <section id="status" aria-label="Live spacecraft status">
+      <div class="status-head">
+        <h2>Live status</h2>
+        <p class="st-legend" aria-label="Colour meanings">
+          <span class="st st-ok">Nominal</span>
+          <span class="st st-warn">Warning</span>
+          <span class="st st-crit">Critical</span>
+          <span class="st st-stale">Stale / no data</span>
+          <span class="st st-invalid">Invalid value</span>
+        </p>
+      </div>
+      <div class="tiles" id="tiles"></div>
+    </section>
+
+    <section id="health" class="grid health">
+      <div class="card">
+        <div class="card-h"><h2>Alarms</h2><button class="btn-ghost" id="ackBtn">Acknowledge all</button></div>
+        <ul class="alarms" id="alarmActive"></ul>
+        <h3>Alarm history</h3>
+        <ol class="log alarm-log" id="alarmLog"></ol>
+        <h3>Fault injection — test the alarms</h3>
+        <div class="faults" role="group" aria-label="Fault injection">
+          <button class="btn-ghost" data-fault="lowBatt" aria-pressed="false">Low battery</button>
+          <button class="btn-ghost" data-fault="cold" aria-pressed="false">Cold battery (heater fault)</button>
+          <button class="btn-ghost" data-fault="link" aria-pressed="false">Link loss</button>
+          <button class="btn-ghost" data-fault="glitch" aria-pressed="false">Sensor glitch</button>
+          <button class="btn-ghost" id="clearFaults">Clear all</button>
+        </div>
+        <p class="muted small">Faults act on the simulated spacecraft, not on the display: the ground segment only sees the packets that result, exactly as it would in orbit.</p>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Latest readings</h2><span class="unit" id="pktMeta">—</span></div>
+        <div class="table-wrap"><table class="readings" id="readTable"></table></div>
+      </div>
     </section>
 
     <section id="ops" class="grid ops">
@@ -155,6 +190,26 @@
       </div>
     </section>
 
+    <section id="contract" class="grid contract">
+      <div class="card">
+        <div class="card-h"><h2>Telemetry data contract</h2><span class="chip">v1 · JSON lines · 1 Hz · 115200 baud</span></div>
+        <p class="muted small">Every packet is one JSON object per line. The same format comes from the simulator, the Tinkercad sketch and the ESP32-S3 flight firmware, so the dashboard never needs to know which one it is talking to. Fields marked <b>required</b> must be in every packet; optional fields show <i>No data</i> until they arrive.</p>
+        <div class="table-wrap"><table class="contract-table" id="contractTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Example packet</h2></div>
+        <pre class="pkt" id="examplePkt"></pre>
+        <h3>Ground rules</h3>
+        <ul class="howto">
+          <li>A field is <b>stale</b> 3 s after its last update; its tile turns grey and its chart line breaks.</li>
+          <li>No packet for 3 s → link <b>STALE</b>; for 10 s → link <b>LOST</b> (critical alarm).</li>
+          <li>Values outside the sensor's physical range, or of the wrong type, are shown as <b>INVALID</b> and never plotted.</li>
+          <li>Lines that are not valid JSON are counted as rejected and logged.</li>
+          <li>Alarms latch with a UTC timestamp, stay in the history when they clear, and can be acknowledged.</li>
+        </ul>
+      </div>
+    </section>
+
     <section id="mission" class="grid mission">
       <div class="card">
         <div class="card-h"><h2>Mission statement</h2></div>
@@ -166,7 +221,7 @@
         <h3>Tinkercad circuit</h3>
         <p class="muted small">Arduino stand-in of the flight computer: TMP36 (A0), sun sensor (A1), battery-voltage pot (A3), heater/imaging/downlink LEDs (D13/D7/D4) and antenna-deployment servo (D9). <a href="https://www.tinkercad.com/things/cY2kWDnTdZB" target="_blank" rel="noopener" style="color:var(--accent)">Open the circuit in Tinkercad →</a></p>
         <h3>Prototype link</h3>
-        <p class="muted small">Flash <code>firmware/marsad_telemetry.ino</code> to the ESP32-S3 prototype, plug it in over USB and press <b>Connect prototype</b>. The dashboard switches from simulated to live telemetry (Web Serial, Chrome/Edge).</p>
+        <p class="muted small">Flash <code>firmware/marsad_telemetry/marsad_telemetry.ino</code> to the ESP32-S3 prototype, plug it in over USB and press <b>Connect prototype</b>. The dashboard switches from simulated to live telemetry (Web Serial, Chrome/Edge).</p>
       </div>
     </section>
   </main>
