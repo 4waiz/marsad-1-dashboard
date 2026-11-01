@@ -33,6 +33,9 @@ export const MODES = [
   { key: "safe", name: "Safe / eclipse", min: 35, color: "#a07cff" },
 ];
 
+export const SUBSYSTEMS = ["CDHS", "Payload", "ADCS", "COMMS", "EPS", "Thermal", "Structure"];
+export const SUB_COLORS = ["#7c9cff", "#4fd1a5", "#f5b941", "#ff8fb1", "#a07cff", "#ff6b7a", "#8ad8ff"];
+
 // v (V), ma (mA), g (mass per unit), aed (cost per unit), on: [sun, nadir, gs, safe]
 export const COMPONENTS = [
   { name: "ESP32-S3 On-Board Computer", sub: "CDHS", v: 3.3, ma: 240, qty: 1, g: 10, aed: 60, dims: [69, 26, 10], on: [1, 1, 1, 1], data: "Telemetry", vendor: "DigiKey" },
@@ -108,6 +111,8 @@ export const CONTRACT = [
   { key: "ndci", label: "NDCI", type: "number", unit: "", dp: 3, range: [-1, 1], desc: "Chlorophyll index from AS7341 (nadir only)" },
   { key: "lat", label: "Latitude", type: "number", unit: "°", dp: 2, range: [-90, 90], desc: "From onboard propagator" },
   { key: "lon", label: "Longitude", type: "number", unit: "°", dp: 2, range: [-180, 180], desc: "From onboard propagator" },
+  { key: "rate", label: "Body rate", type: "number", unit: "°/s", dp: 2, range: [0, 60], scale: [0, 6], nominal: [0, 2], warnHigh: 2, critHigh: 4, desc: "|ω| from the ICM-20948 gyro; the ADCS rate-damps above 1.5 °/s, so >2 °/s means it is not holding" },
+  { key: "perr", label: "Pointing error", type: "number", unit: "°", dp: 1, range: [0, 180], desc: "ADCS boresight to target angle; absent in safe mode (magnetorquers off)" },
   { key: "heater", label: "Battery heater", type: "boolean", desc: "Heater relay state" },
   { key: "antenna", label: "Antenna", type: "boolean", desc: "true once the UHF antenna has deployed" },
 ];
