@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MARSAD-1 Phase 1 Report</title>
+<meta name="description" content="SatForge UAE 2026 Qualifiers Phase 1 technical report for MARSAD-1, Team Kanban's 3U CubeSat for harmful algal bloom monitoring." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Noto+Kufi+Arabic:wght@600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #14212b; --muted: #5b6b76; --line: #d8e1e5; --soft: #f2f7f7;
+    --teal: #0f766e; --deep: #0b3d3a; --amber: #c98a12; --accent-bg: #e6f4f1;
+  }
+  @page { size: A4; margin: 15mm 15mm 16mm; }
+  @page :first { margin: 0; }
+  * { box-sizing: border-box; }
+  html { background: #e9eef0; }
+  body { margin: 0; font-family: Inter, system-ui, sans-serif; font-size: 10pt; line-height: 1.5; color: var(--ink); background: #e9eef0; }
+  .doc { max-width: 210mm; margin: 0 auto; background: white; padding: 16mm; }
+  h1, h2, h3 { font-family: "Space Grotesk", sans-serif; color: var(--deep); line-height: 1.2; }
+  h2 { font-size: 17pt; margin: 0 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid var(--teal); break-after: avoid; }
+  h2 .num { color: var(--teal); margin-right: 3mm; }
+  h3 { font-size: 11.5pt; margin: 5mm 0 1.5mm; break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul { margin: 0 0 3mm; padding-left: 5mm; } li { margin-bottom: 1mm; }
+  section { margin-bottom: 6mm; }
+  .break { break-before: page; }
+  .mono { font-family: "JetBrains Mono", monospace; font-size: 8.8pt; }
+  a { color: var(--teal); text-decoration: none; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; font-size: 8.4pt; break-inside: auto; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th { background: var(--deep); color: white; text-align: left; font-weight: 600; padding: 1.3mm 1.8mm; }
+  td { padding: 1.1mm 1.8mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:nth-child(even) td { background: var(--soft); }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  table.bom { font-size: 7.6pt; } table.bom td, table.bom th { padding: 0.75mm 1.4mm; }
+  tfoot td { font-weight: 700; border-top: 2px solid var(--deep); background: white !important; }
+  figure { margin: 3mm 0 4mm; text-align: center; break-inside: avoid; }
+  figure img { max-width: 100%; border-radius: 2mm; }
+  figcaption { font-size: 8.5pt; color: var(--muted); margin-top: 1.5mm; }
+  .callout { background: var(--accent-bg); border-left: 4px solid var(--teal); padding: 3mm 4mm; border-radius: 0 2mm 2mm 0; margin: 3mm 0; break-inside: avoid; }
+  .note { background: #fff7e6; border-left: 4px solid var(--amber); padding: 2.5mm 4mm; border-radius: 0 2mm 2mm 0; margin: 3mm 0; font-size: 9pt; break-inside: avoid; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 3mm 0 4mm; break-inside: avoid; }
+  .kpi { border: 1px solid var(--line); border-radius: 2mm; padding: 2.5mm 3mm; }
+  .kpi b { display: block; font-family: "Space Grotesk"; font-size: 14pt; color: var(--deep); }
+  .kpi span { font-size: 8pt; color: var(--muted); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; align-items: start; }
+  .timeline { display: flex; height: 11mm; border-radius: 2mm; overflow: hidden; font-size: 8pt; font-weight: 700; color: white; margin: 2mm 0 1mm; break-inside: avoid; }
+  .timeline div { display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.15; }
+  .formula { font-family: "JetBrains Mono", monospace; background: var(--soft); border: 1px solid var(--line); padding: 2.5mm 4mm; border-radius: 2mm; display: inline-block; margin: 1mm 0 3mm; }
+  pre { font-family: "JetBrains Mono", monospace; font-size: 8pt; background: #0f1d24; color: #d9f2ee; padding: 3mm 4mm; border-radius: 2mm; white-space: pre-wrap; break-inside: avoid; }
+
+  /* cover */
+  .cover { position: relative; height: 265mm; margin: -16mm -16mm 0; color: white; overflow: hidden; break-after: page;
+           background: #071618 url(../assets/hero_chatgpt.png) center 35% / cover; }
+  .cover::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,14,18,.82) 0%, rgba(4,14,18,.35) 38%, rgba(4,14,18,.2) 60%, rgba(4,14,18,.92) 100%); }
+  .cover > * { position: relative; }
+  .cover .top { padding: 18mm 18mm 0; }
+  .cover .tag { font-family: "JetBrains Mono"; font-size: 8.5pt; letter-spacing: .25em; color: #7ee2c9; }
+  .cover h1 { color: white; font-size: 54pt; margin: 4mm 0 0; letter-spacing: -.02em; }
+  .cover .ar { font-family: "Noto Kufi Arabic"; font-size: 26pt; color: #f5c24a; margin-top: 1mm; }
+  .cover .sub { font-size: 14pt; max-width: 130mm; margin-top: 3mm; }
+  .cover .bottom { position: absolute; left: 18mm; right: 18mm; bottom: 16mm; }
+  .cover .doc-title { font-family: "Space Grotesk"; font-size: 15pt; font-weight: 700; }
+  .cover .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin-top: 5mm; font-size: 9pt; }
+  .cover .meta b { display: block; font-size: 10.5pt; }
+  .cover .meta span { color: #b9cfd3; }
+  .cover .line { height: 1px; background: rgba(255,255,255,.35); margin: 4mm 0; }
+
+  .toc { columns: 2; column-gap: 8mm; font-size: 9.5pt; padding-left: 0; list-style: none; }
+  .toc li { display: flex; gap: 2mm; } .toc li b { color: var(--teal); width: 8mm; }
+
+  @media screen { .doc { box-shadow: 0 2px 20px rgba(0,0,0,.12); margin: 8mm auto; } }
+  @media print { html, body { background: white; } .doc { padding: 0; max-width: none; } .cover { margin: 0; height: 297mm; } }
+</style>
+</head>
+<body>
+<div class="doc">
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="top">
+    <div class="tag">SATFORGE UAE 2026 · QUALIFIERS · PHASE 1</div>
+    <h1>MARSAD-1</h1>
+    <div class="ar">مرصد</div>
+    <div class="sub">A 3U CubeSat that watches the UAE's coastal waters for harmful algal blooms</div>
+  </div>
+  <div class="bottom">
+    <div class="doc-title">Phase 1 Technical Report — Digital Design</div>
+    <div class="line"></div>
+    <div class="meta">
+      <div><b>Awaiz Ahmed</b><span>Mission lead · CDHS · Dashboard</span></div>
+      <div><b>Mohammad Umar</b><span>EPS · Power budget</span></div>
+      <div><b>Bilal Feroz</b><span>ADCS · Structure · 3D design</span></div>
+      <div><b>Maryam Alnaqbi</b><span>Payload · Comms · Science</span></div>
+    </div>
+    <div class="line"></div>
+    <div class="meta" style="grid-template-columns: 1fr 1fr 2fr">
+      <div><b>Team Kanban</b><span>Team code BSSDT4</span></div>
+      <div><b>1 November 2026</b><span>Submission date</span></div>
+      <div><b>4waiz.github.io/marsad-1-dashboard</b><span>Live mission dashboard</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONTENTS + EXEC SUMMARY ============ -->
+<section>
+  <h2>Contents</h2>
+  <ul class="toc">
+    <li><b>1</b>Executive summary</li>
+    <li><b>2</b>Problem &amp; motivation</li>
+    <li><b>3</b>Mission objectives &amp; success criteria</li>
+    <li><b>4</b>Orbit &amp; concept of operations</li>
+    <li><b>5</b>System architecture &amp; subsystems</li>
+    <li><b>6</b>Budgets: power, mass, volume, data, cost</li>
+    <li><b>7</b>Prototype: Tinkercad circuit</li>
+    <li><b>8</b>3D design</li>
+    <li><b>9</b>Ground segment &amp; dashboard</li>
+    <li><b>10</b>Risks &amp; mitigations</li>
+    <li><b>11</b>Next steps toward the final qualifier</li>
+    <li><b>12</b>Key learnings</li>
+    <li><b>A</b>Appendix: links &amp; repository</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">1</span>Executive summary</h2>
+  <p><b>MARSAD-1</b> (Arabic <i>marsad</i>, "observatory") is a 3U CubeSat designed by Team Kanban to detect and map harmful algal blooms ("red tides") and chlorophyll-a concentration along the UAE coastline of the Arabian Gulf and the Gulf of Oman. It flies in a 550 km sun-synchronous orbit, images UAE coastal waters with a 5 MP camera and an 11-channel spectral sensor, computes a chlorophyll index on board, and sends compact bloom alerts to a ground station in Abu Dhabi over a 433 MHz LoRa link.</p>
+  <p>All Phase 1 design budgets close with margin on the SpacePoint Madar mission designer, using a bill of materials of 17 real, purchasable components:</p>
+  <div class="kpis">
+    <div class="kpi"><b>+2.68 W</b><span>Power margin · 6.60 W generated vs 3.92 W peak load</span></div>
+    <div class="kpi"><b>0.845 kg</b><span>Mass · of 4.0 kg for a 3U (79% margin)</span></div>
+    <div class="kpi"><b>1,420 AED</b><span>Cost · of 3,000 AED budget</span></div>
+    <div class="kpi"><b>75 MB/day</b><span>Data captured · 2 GB onboard storage</span></div>
+  </div>
+  <p>Phase 1 deliverables produced by the team:</p>
+  <ul>
+    <li>Individual and team Madar mission designs (setup, components, CONOPS, data, power, mass and cost budgets) — all phases cleared.</li>
+    <li>A Tinkercad Arduino circuit that simulates the satellite's power, thermal, payload and communications mode logic and prints the same JSON telemetry the dashboard reads.</li>
+    <li>A Tinkercad 3D model of the 3U spacecraft built to the CubeSat Design Specification envelope.</li>
+    <li>A live interactive mission dashboard published on GitHub Pages, and a competition poster.</li>
+  </ul>
+</section>
+
+<!-- ============ 2 PROBLEM ============ -->
+<section class="break">
+  <h2><span class="num">2</span>Problem &amp; motivation</h2>
+  <p>Harmful algal blooms occur when certain species of phytoplankton multiply rapidly. Some species discolour the water red or brown ("red tides"), deplete dissolved oxygen as the bloom decays, or produce toxins. The warm, shallow and semi-enclosed waters of the Arabian Gulf and the Gulf of Oman are susceptible to such events, and large blooms have been recorded in the region.</p>
+  <p>For the UAE the impact is direct:</p>
+  <ul>
+    <li><b>Desalination</b> — much of the country's drinking water comes from seawater desalination. Dense blooms can clog intake screens and foul pre-treatment filters and reverse-osmosis membranes, and plants have had to reduce output or shut down during severe events.</li>
+    <li><b>Fisheries and aquaculture</b> — oxygen depletion and toxins can cause fish kills and force closures.</li>
+    <li><b>Coastal tourism and public health</b> — discoloured water and dead fish on beaches, and potential toxin exposure.</li>
+  </ul>
+  <div class="callout"><b>The gap.</b> Blooms can develop and drift over days. Operators benefit most from <i>early, frequent, local</i> information: where a bloom is, how dense it is and whether it is moving toward an intake. Large Earth-observation missions provide excellent ocean-colour data but are not tailored to a single coastline. A dedicated, low-cost CubeSat that revisits UAE waters daily and pushes simple alerts to operators complements them.</div>
+</section>
+
+<!-- ============ 3 OBJECTIVES ============ -->
+<section>
+  <h2><span class="num">3</span>Mission objectives &amp; success criteria</h2>
+  <table>
+    <thead><tr><th style="width:30%">Item</th><th>Statement</th></tr></thead>
+    <tbody>
+      <tr><td><b>Primary objective</b></td><td>Detect and map harmful algal blooms (red tides) and chlorophyll-a concentration along the UAE coastline of the Arabian Gulf and Gulf of Oman using multispectral imaging, to give early warning to desalination plants, fisheries and coastal authorities.</td></tr>
+      <tr><td><b>Success criterion</b></td><td>Downlink at least one usable, cloud-free multispectral image of UAE coastal waters per day and deliver a chlorophyll-a bloom map to the ground team within 24 hours, for 6 consecutive months.</td></tr>
+      <tr><td><b>Minimum lifetime</b></td><td>12 months.</td></tr>
+      <tr><td><b>Mission tasks</b></td><td>Nadir-pointed multispectral imaging during sunlit passes over the Gulf, onboard compression and bloom detection (NDCI), and downlink of alerts and data over UAE ground-station passes, with UHF telemetry and commanding.</td></tr>
+      <tr><td><b>Secondary objective</b></td><td>Demonstrate a low-cost (&lt; 3,000 AED bill of materials) student CubeSat architecture with onboard data reduction.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 4 ORBIT & CONOPS ============ -->
+<section class="break">
+  <h2><span class="num">4</span>Orbit &amp; concept of operations</h2>
+  <div class="two">
+    <div>
+      <h3>Orbit</h3>
+      <table>
+        <tbody>
+          <tr><td>Type</td><td>Sun-synchronous (SSO)</td></tr>
+          <tr><td>Altitude</td><td>550 km</td></tr>
+          <tr><td>Inclination</td><td>97.6°</td></tr>
+          <tr><td>Local time of descending node</td><td>10:30</td></tr>
+          <tr><td>Period</td><td>95 min</td></tr>
+          <tr><td>Orbits per day</td><td>15</td></tr>
+          <tr><td>Ground station</td><td>Abu Dhabi (24.45° N, 54.38° E), 10° elevation mask</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Why SSO at 550 km</h3>
+      <p>A sun-synchronous orbit crosses the UAE at nearly the same local solar time every day, giving consistent illumination for ocean-colour measurements — important when comparing bloom maps day to day. A mid-morning node (10:30) avoids the strongest afternoon convection and sun glint. 550 km is a common rideshare altitude with a multi-year natural decay time, well beyond the 12-month mission.</p>
+    </div>
+  </div>
+
+  <h3>Concept of operations — one 95-minute orbit</h3>
+  <div class="timeline">
+    <div style="width:42.1%;background:#c98a12">Sun-pointing · 40 min</div>
+    <div style="width:10.5%;background:#1f9e7a">Imaging · 10</div>
+    <div style="width:10.5%;background:#3b6fd8">Downlink · 10</div>
+    <div style="width:36.9%;background:#7b55d6">Safe / eclipse · 35 min</div>
+  </div>
+  <p style="font-size:8.5pt;color:var(--muted)">Timeline — nominal mode allocation per orbit (as entered in the Madar CONOPS phase; total 95 min = orbit period).</p>
+  <table>
+    <thead><tr><th>Mode</th><th class="n">Min / orbit</th><th>Active components</th><th class="n">Load (W)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Sun-pointing (charging)</b></td><td class="n">40</td><td>OBC, IMU, magnetorquers, solar array, EPS (battery, MPPT/BMS, bucks, INA219), temp sensors, structure switches</td><td class="n">1.64</td></tr>
+      <tr><td><b>Nadir / payload imaging</b></td><td class="n">10</td><td>Sun-pointing set + OV5640 camera, AS7341 spectral sensor, GPS, microSD</td><td class="n">2.52</td></tr>
+      <tr><td><b>Ground-station pass</b></td><td class="n">10</td><td>Sun-pointing set + GPS, SX1278 LoRa radio, antenna, microSD</td><td class="n">2.45</td></tr>
+      <tr><td><b>Safe / eclipse</b></td><td class="n">35</td><td>OBC, IMU, EPS, temp sensors, <b>battery heater</b>; magnetorquers and payload off</td><td class="n">1.88</td></tr>
+    </tbody>
+  </table>
+  <p><b>Mode logic.</b> The flight software enters <i>safe</i> whenever the satellite is in eclipse or battery state of charge drops below 20%. In sunlight it holds a sun-pointing, charging attitude; when the ground track crosses the UAE target box and charge is above 60% it switches to nadir imaging; inside the Abu Dhabi visibility circle it enters the ground-pass mode and downlinks queued alerts. The battery heater operates with hysteresis (on below 5 °C, off above 10 °C).</p>
+</section>
+
+<!-- ============ 5 ARCHITECTURE ============ -->
+<section class="break">
+  <h2><span class="num">5</span>System architecture &amp; subsystems</h2>
+  <figure style="float:right; width:52mm; margin:0 0 3mm 5mm">
+    <img src="../assets/cubesat_nadir.png" alt="Render of MARSAD-1 from below showing the nadir camera" />
+    <figcaption>Figure 1 — Model seen from below: cells, nadir camera and spectral window.</figcaption>
+  </figure>
+
+  <h3>CDHS — command &amp; data handling</h3>
+  <p>An <b>ESP32-S3</b> (dual-core 240 MHz, 8 MB PSRAM, 16 MB flash) runs the flight-software state machine, schedules imaging, reads all sensors over I²C/SPI, and formats telemetry. A <b>32 GB microSD</b> stores raw images, spectra and logs between ground passes. The ESP32-S3's camera interface (DVP) connects the imager directly.</p>
+
+  <h3>Payload — bloom detection</h3>
+  <p>The <b>OV5640</b> 5 MP camera captures RGB context imagery for visual confirmation. The <b>AS7341</b> 11-channel spectral sensor (350–1000 nm) measures water-leaving light in narrow bands. Chlorophyll-rich bloom water reflects more strongly in the red-edge (~708 nm) relative to the chlorophyll absorption band (~665 nm), which is captured by the Normalised Difference Chlorophyll Index:</p>
+  <div class="formula">NDCI = (R<sub>708</sub> − R<sub>665</sub>) / (R<sub>708</sub> + R<sub>665</sub>)</div>
+  <p>NDCI is computed on board. Pixels or samples above a threshold are tagged, and a compact alert packet (location, index, time) is queued for the next ground pass. Full images are kept and downlinked selectively. On the AS7341 the closest available bands are used (F8 ≈ 680 nm and the NIR channel as the red-edge proxy); calibration against reference data is planned for the next phase.</p>
+
+  <h3>ADCS — attitude determination &amp; control</h3>
+  <p>An <b>ICM-20948</b> 9-DoF IMU (gyro, accelerometer, magnetometer) provides attitude determination; a <b>3-axis magnetorquer set</b> driven by a DRV8833 H-bridge detumbles the spacecraft (B-dot) and holds coarse sun/nadir pointing. A <b>u-blox NEO-M8N</b> GPS gives position for geotagging images and precise time for imaging schedules.</p>
+
+  <h3>COMMS — communications</h3>
+  <p>A <b>Semtech SX1278 LoRa</b> transceiver at 433 MHz (up to +20 dBm) carries telemetry, commands and bloom alerts. LoRa's long-range, low-rate modulation suits small alert packets. A <b>deployable spring-steel tape monopole</b> is released by a burn-wire after separation.</p>
+
+  <h3>EPS — electrical power</h3>
+  <p><b>Six 1.1 W body-mounted solar cells</b> (6.6 W) charge a <b>2S Li-ion 18650 pack</b> (7.4 V, 3.4 Ah, ≈ 25 Wh) through a <b>CN3791 MPPT charger with 2S BMS</b>. <b>MP1584 buck converters</b> provide regulated 5 V and 3.3 V rails, with load switching from the OBC, and an <b>INA219</b> monitors bus voltage and current.</p>
+
+  <h3>Thermal</h3>
+  <p>A <b>BME280</b> and <b>DS18B20</b> probes monitor internal, battery and panel temperatures. A <b>1 W Kapton heater pad</b> on the battery keeps the cells above 0 °C during the 35-minute eclipse.</p>
+
+  <h3>Structure</h3>
+  <p>A <b>3U aluminium 6061 frame</b> (100 × 100 × 340.5 mm envelope, four 8.5 mm rails, 1U separator rings) with a PC/104-style board stack, following the CubeSat Design Specification, plus two deployment (kill) switches.</p>
+</section>
+
+<!-- ============ 6 BUDGETS ============ -->
+<section class="break">
+  <h2><span class="num">6</span>Budgets</h2>
+  <p>All budgets were computed and locked in the SpacePoint Madar mission designer. Power per component follows the designer's convention <span class="mono">P = V × I</span> at the operating point.</p>
+
+  <h3>6.1 Power</h3>
+  <figure>
+    <img src="chart_power_light.png" alt="Power by subsystem and generation vs load" style="max-height:58mm" />
+    <figcaption>Figure 2 — Left: power drawn by each subsystem when ON. Right: generated power vs total load.</figcaption>
+  </figure>
+  <div class="two">
+    <table>
+      <thead><tr><th>Mode</th><th class="n">Load (W)</th><th class="n">Min</th><th class="n">mWh / orbit</th></tr></thead>
+      <tbody>
+        <tr><td>Sun-pointing</td><td class="n">1.64</td><td class="n">40</td><td class="n">1,094</td></tr>
+        <tr><td>Nadir imaging</td><td class="n">2.52</td><td class="n">10</td><td class="n">420</td></tr>
+        <tr><td>Ground pass</td><td class="n">2.45</td><td class="n">10</td><td class="n">409</td></tr>
+        <tr><td>Safe / eclipse</td><td class="n">1.88</td><td class="n">35</td><td class="n">1,098</td></tr>
+      </tbody>
+      <tfoot><tr><td>Total</td><td></td><td class="n">95</td><td class="n">3,020</td></tr></tfoot>
+    </table>
+    <div>
+      <p><b>Sizing.</b> Total load with every component on is <b>3.917 W</b> (3,916.5 mW). With 1.1 W cells, ⌈3.917 / 1.1⌉ = 4 cells would just cover it; we selected <b>6 cells = 6.60 W</b>, a <b>+2.68 W (68%)</b> margin that covers cosine losses of body-mounted cells and degradation.</p>
+      <p><b>Energy.</b> 3.02 Wh is used per orbit (45.3 Wh per day). The 25 Wh battery covers the 35-minute eclipse load (≈ 1.1 Wh) with a shallow depth of discharge (≈ 4–5%), which favours cycle life.</p>
+    </div>
+  </div>
+
+  <h3>6.2 Mass &amp; volume</h3>
+  <div class="two">
+    <figure style="margin-top:0">
+      <img src="chart_mass_light.png" alt="Mass by subsystem" />
+      <figcaption>Figure 3 — Mass by subsystem (total 845 g).</figcaption>
+    </figure>
+    <div>
+      <p><b>Mass:</b> 0.845 kg against the 4.0 kg 3U limit — a <b>3.16 kg (79%) margin</b>. The structure (450 g) and EPS (273 g, mostly the six panels and battery) dominate.</p>
+      <p><b>Volume:</b> 500.6 cm³ of component volume against 3,000 cm³ available (the frame is counted by its material footprint, not its envelope). The large margin leaves room for harnessing, a larger battery, or a second payload in later phases.</p>
+    </div>
+  </div>
+
+  <h3>6.3 Data</h3>
+  <table>
+    <thead><tr><th>Source</th><th>Type</th><th class="n">Size / meas.</th><th class="n">Meas. / min</th><th class="n">Active min</th><th class="n">Per day</th><th>Handling</th></tr></thead>
+    <tbody>
+      <tr><td>OV5640 camera</td><td>Image</td><td class="n">500 KB</td><td class="n">1</td><td class="n">10</td><td class="n">75.0 MB</td><td>Stored; selected scenes downlinked</td></tr>
+      <tr><td>AS7341 spectral</td><td>Science</td><td class="n">0.05 KB</td><td class="n">60</td><td class="n">10</td><td class="n">450 KB</td><td>Stored + sent</td></tr>
+      <tr><td>ESP32-S3 OBC</td><td>Telemetry</td><td class="n">0.2 KB</td><td class="n">1</td><td class="n">95</td><td class="n">285 KB</td><td>Stored + sent</td></tr>
+      <tr><td>ICM-20948 IMU</td><td>Telemetry</td><td class="n">0.03 KB</td><td class="n">6</td><td class="n">95</td><td class="n">257 KB</td><td>Stored</td></tr>
+      <tr><td>NEO-M8N GPS</td><td>GPS/Nav</td><td class="n">0.1 KB</td><td class="n">6</td><td class="n">20</td><td class="n">180 KB</td><td>Stored + sent</td></tr>
+      <tr><td>SX1278 LoRa</td><td>TT&amp;C</td><td class="n">0.25 KB</td><td class="n">6</td><td class="n">10</td><td class="n">225 KB</td><td>Sent</td></tr>
+      <tr><td>EPS / thermal / other</td><td>Housekeeping</td><td class="n">0.01–0.05 KB</td><td class="n">1–2</td><td class="n">10–95</td><td class="n">small</td><td>Stored (key values sent)</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="5">Total generated: 5.00 MB per orbit</td><td class="n">75.0 MB</td><td>74.78 MB stored · 1.42 MB sent</td></tr></tfoot>
+  </table>
+  <div class="callout" style="font-size:8.8pt;padding:2.2mm 3.5mm"><b>Design driver.</b> The satellite captures about 50× more data per day than the LoRa link can send. A 2 GB card holds roughly 27 days of raw imagery. MARSAD-1 therefore processes images on board and sends <i>results</i> (kilobyte bloom alerts and thumbnails) instead of raw images, and keeps only bloom-flagged scenes.</div>
+
+  <h3>6.4 Cost &amp; bill of materials</h3>
+  <table class="bom">
+    <thead><tr><th>#</th><th>Component</th><th>Subsystem</th><th class="n">Qty</th><th class="n">V</th><th class="n">mA</th><th class="n">P (mW)</th><th class="n">Mass (g)</th><th class="n">Cost (AED)</th><th>Vendor</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>ESP32-S3 on-board computer</td><td>CDHS</td><td class="n">1</td><td class="n">3.3</td><td class="n">240</td><td class="n">792</td><td class="n">10</td><td class="n">60</td><td>DigiKey</td></tr>
+      <tr><td>2</td><td>OV5640 5 MP camera</td><td>Payload</td><td class="n">1</td><td class="n">3.3</td><td class="n">140</td><td class="n">462</td><td class="n">8</td><td class="n">45</td><td>Arducam</td></tr>
+      <tr><td>3</td><td>AS7341 11-channel spectral sensor</td><td>Payload</td><td class="n">1</td><td class="n">3.3</td><td class="n">1</td><td class="n">3.3</td><td class="n">3</td><td class="n">65</td><td>Adafruit</td></tr>
+      <tr><td>4</td><td>ICM-20948 9-DoF IMU</td><td>ADCS</td><td class="n">1</td><td class="n">3.3</td><td class="n">4</td><td class="n">13.2</td><td class="n">3</td><td class="n">55</td><td>SparkFun</td></tr>
+      <tr><td>5</td><td>3-axis magnetorquers + DRV8833</td><td>ADCS</td><td class="n">1</td><td class="n">5</td><td class="n">150</td><td class="n">750</td><td class="n">45</td><td class="n">120</td><td>DigiKey</td></tr>
+      <tr><td>6</td><td>u-blox NEO-M8N GPS</td><td>ADCS</td><td class="n">1</td><td class="n">3.3</td><td class="n">45</td><td class="n">148.5</td><td class="n">12</td><td class="n">75</td><td>u-blox</td></tr>
+      <tr><td>7</td><td>SX1278 LoRa 433 MHz transceiver</td><td>COMMS</td><td class="n">1</td><td class="n">3.3</td><td class="n">120</td><td class="n">396</td><td class="n">5</td><td class="n">35</td><td>DigiKey</td></tr>
+      <tr><td>8</td><td>Deployable 433 MHz tape antenna</td><td>COMMS</td><td class="n">1</td><td class="n">5</td><td class="n">1</td><td class="n">5</td><td class="n">20</td><td class="n">40</td><td>Amazon.ae</td></tr>
+      <tr><td>9</td><td>Solar cell, 6 V 1 W</td><td>EPS</td><td class="n">6</td><td class="n">6</td><td class="n">1</td><td class="n">6</td><td class="n">150</td><td class="n">150</td><td>Amazon.ae</td></tr>
+      <tr><td>10</td><td>2S Li-ion 18650 pack 7.4 V 3.4 Ah</td><td>EPS</td><td class="n">1</td><td class="n">7.4</td><td class="n">1</td><td class="n">7.4</td><td class="n">95</td><td class="n">90</td><td>DigiKey</td></tr>
+      <tr><td>11</td><td>CN3791 MPPT charger + 2S BMS</td><td>EPS</td><td class="n">1</td><td class="n">7.4</td><td class="n">5</td><td class="n">37</td><td class="n">10</td><td class="n">40</td><td>AliExpress</td></tr>
+      <tr><td>12</td><td>MP1584 buck converters (5 V, 3.3 V)</td><td>EPS</td><td class="n">2</td><td class="n">7.4</td><td class="n">3</td><td class="n">22.2</td><td class="n">16</td><td class="n">40</td><td>DigiKey</td></tr>
+      <tr><td>13</td><td>INA219 current/voltage monitor</td><td>EPS</td><td class="n">1</td><td class="n">3.3</td><td class="n">1</td><td class="n">3.3</td><td class="n">2</td><td class="n">25</td><td>Adafruit</td></tr>
+      <tr><td>14</td><td>MicroSD storage module (32 GB)</td><td>CDHS</td><td class="n">1</td><td class="n">3.3</td><td class="n">80</td><td class="n">264</td><td class="n">5</td><td class="n">35</td><td>Amazon.ae</td></tr>
+      <tr><td>15</td><td>BME280 + DS18B20 temperature sensors</td><td>Thermal</td><td class="n">1</td><td class="n">3.3</td><td class="n">1</td><td class="n">3.3</td><td class="n">6</td><td class="n">30</td><td>SparkFun</td></tr>
+      <tr><td>16</td><td>Kapton battery heater pad (1 W)</td><td>Thermal</td><td class="n">1</td><td class="n">5</td><td class="n">200</td><td class="n">1000</td><td class="n">5</td><td class="n">35</td><td>Amazon.ae</td></tr>
+      <tr><td>17</td><td>3U Al-6061 frame + PC/104 stack</td><td>Structure</td><td class="n">1</td><td class="n">3.3</td><td class="n">1</td><td class="n">3.3</td><td class="n">450</td><td class="n">480</td><td>CubeSatShop</td></tr>
+    </tbody>
+    <tfoot><tr><td></td><td>Total (17 line items)</td><td></td><td></td><td></td><td></td><td class="n">3,916.5</td><td class="n">845</td><td class="n">1,420</td><td></td></tr></tfoot>
+  </table>
+  <p><b>Cost:</b> 1,420 AED against the 3,000 AED budget (1,580 AED margin). The frame is the most expensive item (480 AED); the margin can absorb a flight-grade antenna, spare parts and test equipment.</p>
+</section>
+
+<!-- ============ 7 PROTOTYPE ============ -->
+<section class="break">
+  <h2><span class="num">7</span>Prototype: Tinkercad circuit</h2>
+  <p>Before buying hardware we simulated the flight computer's sensing and mode logic in Tinkercad Circuits with an Arduino Uno standing in for the ESP32-S3. Circuit: <a href="https://www.tinkercad.com/things/cY2kWDnTdZB">tinkercad.com/things/cY2kWDnTdZB</a> (<i>Team Kanban – Circuit Design - Awaiz Ahmed</i>).</p>
+  <figure>
+    <img src="../assets/tinkercad_circuit.png" alt="Tinkercad circuit" style="max-height:72mm; border:1px solid var(--line)" />
+    <figcaption>Figure 4 — Tinkercad circuit: TMP36, photoresistor divider, potentiometer, three status LEDs and the antenna-deployment servo.</figcaption>
+  </figure>
+  <div class="two">
+    <table>
+      <thead><tr><th>Pin</th><th>Part</th><th>Represents</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">A0</td><td>TMP36</td><td>Battery temperature</td></tr>
+        <tr><td class="mono">A1</td><td>Photoresistor + 10 kΩ pull-down</td><td>Sun sensor (sunlit / eclipse)</td></tr>
+        <tr><td class="mono">A3</td><td>Potentiometer (3.3 V)</td><td>Battery voltage → state of charge</td></tr>
+        <tr><td class="mono">D13</td><td>Red LED + 220 Ω</td><td>Battery heater</td></tr>
+        <tr><td class="mono">D7</td><td>Green LED + 220 Ω</td><td>Payload imaging (nadir)</td></tr>
+        <tr><td class="mono">D4</td><td>Blue LED + 220 Ω</td><td>UHF downlink / ground pass</td></tr>
+        <tr><td class="mono">D9</td><td>Micro servo</td><td>Antenna deployment</td></tr>
+      </tbody>
+    </table>
+    <div>
+      <p><b>Behaviour verified in simulation:</b></p>
+      <ul>
+        <li>Boot message, then the antenna servo rotates 0° → 90° five seconds after power-up (separation timer).</li>
+        <li>Mode selection: <i>safe</i> if SoC &lt; 20% or no sunlight; <i>ground pass</i> for 2 s of every 10 s once the antenna is out; <i>nadir imaging</i> if SoC &gt; 60%; otherwise <i>sun-pointing</i>.</li>
+        <li>Heater LED with 5 °C / 10 °C hysteresis on the TMP36 reading.</li>
+        <li>Imaging and downlink LEDs follow the active mode.</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Telemetry format</h3>
+  <p>The sketch prints one JSON line per second over serial (9600 baud in Tinkercad, 115200 on the ESP32-S3). The dashboard's Web Serial connection reads the same keys:</p>
+  <pre>MARSAD-1 boot - Team Kanban
+{"soc":100.0,"v":8.40,"tbat":24.8,"sun":54,"mode":"nadir","heater":false,"antenna":false}
+EVENT antenna deployed
+{"soc":100.0,"v":8.40,"tbat":24.8,"sun":54,"mode":"gs","heater":false,"antenna":true}</pre>
+  <p style="font-size:9pt;color:var(--muted)">Source: <span class="mono">firmware/tinkercad_prototype/tinkercad_prototype.ino</span>; ESP32-S3 flight sketch with INA219, BME280, DS18B20, AS7341 and NDCI: <span class="mono">firmware/marsad_telemetry/marsad_telemetry.ino</span>.</p>
+</section>
+
+<!-- ============ 8 3D ============ -->
+<section class="break">
+  <h2><span class="num">8</span>3D design</h2>
+  <p>The spacecraft was modelled to the CubeSat Design Specification 3U envelope and assembled in Tinkercad 3D: <a href="https://www.tinkercad.com/things/4Qi0WBiqTus">tinkercad.com/things/4Qi0WBiqTus</a> (<i>Team Kanban – 3D Design - Awaiz Ahmed</i>). Parts were generated parametrically (<span class="mono">cad/make_cubesat.py</span>), imported as colour-separated STL parts and rendered in Blender.</p>
+  <div class="two">
+    <figure style="margin-top:0">
+      <img src="../assets/cubesat_hero.png" alt="3D render" style="max-height:62mm" />
+      <figcaption>Figure 5 — Blender render of the 3D model.</figcaption>
+    </figure>
+    <div>
+      <table>
+        <thead><tr><th>Feature</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Envelope</td><td>100 × 100 × 340.5 mm (3U)</td></tr>
+          <tr><td>Frame</td><td>Four 8.5 mm corner rails, top and bottom plates, two 1U separator rings</td></tr>
+          <tr><td>Solar cells</td><td>72 body-mounted cell areas (2 × 3 per unit, 4 faces, 3 units)</td></tr>
+          <tr><td>Nadir face</td><td>Camera lens barrel and spectral-sensor window</td></tr>
+          <tr><td>Zenith face</td><td>GPS patch antenna, two deployment kill switches</td></tr>
+          <tr><td>Antennas</td><td>Two deployed 433 MHz tape elements (170 mm) with hinge blocks</td></tr>
+          <tr><td>Colours</td><td>Silver (Al-6061), deep blue (cells), gold (antennas), black (optics)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<!-- ============ 9 DASHBOARD ============ -->
+  <h2 style="margin-top:6mm"><span class="num">9</span>Ground segment &amp; dashboard</h2>
+  <p>The mission dashboard is live at <a href="https://4waiz.github.io/marsad-1-dashboard/">4waiz.github.io/marsad-1-dashboard</a> and is open source.</p>
+  <div class="note"><b>Honesty note.</b> Until the physical prototype is connected, telemetry on the dashboard is <b>simulated</b> from the design budgets and orbit model, and the bloom map uses a <b>seeded demonstration field</b>. Both are labelled as such on the page.</div>
+  <figure>
+    <img src="../assets/dashboard_top.png" alt="Dashboard screenshot" style="max-height:36mm; border:1px solid var(--line)" />
+    <figcaption>Figure 6 — Operations view: live ground track, spacecraft state, subsystem status and event log.</figcaption>
+  </figure>
+  <ul>
+    <li><b>Operations</b> — ground track from a sun-synchronous orbit propagator, eclipse and Abu Dhabi pass prediction, current CONOPS mode, subsystem status and an event log. A time warp (1×–300×) lets a full orbit be watched in minutes.</li>
+    <li><b>Telemetry</b> — battery state of charge, generated vs consumed power, internal/battery/panel temperatures and onboard storage.</li>
+    <li><b>Bloom watch</b> — a chlorophyll-a (NDCI) map of UAE waters with watch/warning status for desalination plants and fisheries.</li>
+    <li><b>Prototype link</b> — a <i>Connect prototype (USB)</i> button uses the browser's Web Serial API (Chrome/Edge) to read the JSON telemetry from the hardware and switch the panels from simulated to live data.</li>
+  </ul>
+</section>
+
+<!-- ============ 10 RISKS ============ -->
+<section class="break">
+  <h2><span class="num">10</span>Risks &amp; mitigations</h2>
+  <table>
+    <thead><tr><th style="width:26%">Risk</th><th style="width:12%">Impact</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Cloud cover hides the target</td><td>Medium</td><td>15 orbits/day and daily revisits; multi-day composites; bloom alerts only from cloud-free samples; success criterion requires one usable image per day, not per pass.</td></tr>
+      <tr><td>Downlink capacity (1.42 MB/day)</td><td>High</td><td>Onboard NDCI processing; send alerts and thumbnails, not raw imagery; prioritise bloom-flagged scenes; option for additional ground stations.</td></tr>
+      <tr><td>Radiation effects on COTS electronics (latch-up, bit flips)</td><td>High</td><td>Watchdog and safe mode, INA219 over-current detection with load power-cycling, CRC on stored data, periodic reboots.</td></tr>
+      <tr><td>Battery too cold in eclipse</td><td>Medium</td><td>Kapton heater with hysteresis; battery temperature monitoring; heater energy already in the power budget.</td></tr>
+      <tr><td>Coarse pointing with magnetorquers only</td><td>Medium</td><td>Wide field-of-view imaging; GPS + IMU geotagging; image only when attitude is stable.</td></tr>
+      <tr><td>Antenna fails to deploy</td><td>Medium</td><td>Redundant burn-wire activation attempts; beacon via stowed antenna at reduced range.</td></tr>
+      <tr><td>NDCI accuracy without calibration</td><td>Medium</td><td>Ground calibration against reference ocean-colour data; conservative thresholds; human-in-the-loop confirmation with RGB images.</td></tr>
+      <tr><td>Schedule for the physical prototype</td><td>Medium</td><td>Parts chosen from stocked distributors; simulation-first development; tasks split by subsystem owner.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top:6mm"><span class="num">11</span>Next steps toward the final qualifier</h2>
+  <ul>
+    <li><b>Physical prototype</b> on an ESP32-S3 with the INA219, BME280, DS18B20 and AS7341 breakouts, running <span class="mono">marsad_telemetry.ino</span> and streaming to the dashboard over USB.</li>
+    <li><b>Multisim simulation</b> of the EPS (solar input, MPPT charging, buck regulation) and the heater driver, with a recorded walkthrough.</li>
+    <li><b>Testing</b> — sensor calibration, mode-switch tests with a lamp as the "sun", thermal test of the heater loop, LoRa range test between two modules, battery charge/discharge cycles.</li>
+    <li><b>Link budget</b> for the 433 MHz downlink at 550 km and the Abu Dhabi ground station.</li>
+    <li><b>Algorithm work</b> — NDCI thresholds and calibration using public ocean-colour reference data.</li>
+    <li><b>Final deliverables</b> — prototype video, technical report, final dashboard and recorded presentation.</li>
+  </ul>
+
+  <h2 style="margin-top:6mm"><span class="num">12</span>Key learnings</h2>
+  <ul>
+    <li><b>Budgets drive the design.</b> The power budget set the array at six cells and made the eclipse heater a visible line item.</li>
+    <li><b>Downlink, not mass, is the bottleneck.</b> Capturing 75 MB/day while sending 1.42 MB/day forced onboard processing.</li>
+    <li><b>Mass is easy in a 3U; layout, cabling and heat paths are not.</b> We used under a quarter of the mass limit but must still plan volume and thermal paths.</li>
+    <li><b>Simulate first.</b> Tinkercad exposed wiring mistakes and let us test the mode logic before buying parts.</li>
+    <li><b>One source of truth.</b> A shared live dashboard kept four subsystem owners working from the same numbers.</li>
+  </ul>
+</section>
+
+<!-- ============ APPENDIX ============ -->
+<section>
+  <h2><span class="num">A</span>Appendix: links &amp; repository</h2>
+  <table>
+    <thead><tr><th style="width:32%">Item</th><th>Link</th></tr></thead>
+    <tbody>
+      <tr><td>Live dashboard</td><td><a href="https://4waiz.github.io/marsad-1-dashboard/">https://4waiz.github.io/marsad-1-dashboard/</a></td></tr>
+      <tr><td>Source repository</td><td><a href="https://github.com/4waiz/marsad-1-dashboard">https://github.com/4waiz/marsad-1-dashboard</a></td></tr>
+      <tr><td>Tinkercad circuit</td><td><a href="https://www.tinkercad.com/things/cY2kWDnTdZB">https://www.tinkercad.com/things/cY2kWDnTdZB</a></td></tr>
+      <tr><td>Tinkercad 3D design</td><td><a href="https://www.tinkercad.com/things/4Qi0WBiqTus">https://www.tinkercad.com/things/4Qi0WBiqTus</a></td></tr>
+      <tr><td>Prototype firmware</td><td class="mono">firmware/tinkercad_prototype/ · firmware/marsad_telemetry/</td></tr>
+      <tr><td>CAD &amp; render scripts</td><td class="mono">cad/make_cubesat.py · cad/render_cubesat.py</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:8.5pt;color:var(--muted)">The cover image is an AI-generated artist's impression. All other figures are produced from the team's own design data, models, circuit and dashboard.</p>
+</section>
+
+</div>
+</body>
+</html>

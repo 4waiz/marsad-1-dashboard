@@ -1,0 +1,19 @@
+[at 0.4]
+This is MARSAD one's flight computer, running in simulation.
+An Arduino stands in for our flight computer, wired to the same sensors.
+A temperature sensor watches the battery. A light sensor spots eclipse.
+A knob plays battery voltage, three lights show the mode, and a servo deploys the antenna.
+[at 16.4]
+Every second, the code picks a mode: safe, charging, imaging, or ground pass.
+[at 22.9]
+Power on. Battery full, sun in view: the green imaging light comes on.
+[at 28.0]
+Five seconds after separation, the servo swings the antenna out.
+[at 32.6]
+Every ten seconds, a ground pass. The blue downlink light takes over.
+[at 37.6]
+Every reading streams out as J S O N, the format our live dashboard reads.
+[at 43.4]
+Same logic, same data, from the bench to orbit.
+[at 48.6]
+MARSAD one. Team Kanban.

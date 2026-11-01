@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MARSAD-1 Poster</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&family=Noto+Kufi+Arabic:wght@600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root { --bg:#0a0912; --panel:#15122a; --line:#2c2650; --text:#ece9f7; --muted:#a9a3c6; --accent:#4fd1a5; --blue:#7c9cff; --amber:#f5b941; --pink:#ff8fb1; --violet:#a07cff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1240px; height: 1754px; background: var(--bg); }
+  body { font-family: "Space Grotesk", sans-serif; color: var(--text); font-size: 13px; line-height: 1.38; position: relative; overflow: hidden; }
+  .hero { position: relative; height: 560px; overflow: hidden; }
+  .hero .blur { position: absolute; inset: -40px; background: url(../assets/hero_chatgpt.png) center 30% / cover; filter: blur(26px) brightness(.45) saturate(1.2); }
+  .hero .shot { position: absolute; right: 0; top: 0; height: 560px; width: 374px; background: url(../assets/hero_chatgpt.png) center / cover; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 70px); }
+  .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,9,18,0) 75%, var(--bg) 100%); pointer-events:none; }
+  .title { position: absolute; z-index: 2; top: 40px; left: 40px; width: 780px; text-align: left; }
+  .title .tag { display: inline-block; font-family: "JetBrains Mono"; font-size: 13px; letter-spacing: .25em; color: var(--accent); border: 1px solid rgba(79,209,165,.6); padding: 5px 14px; border-radius: 999px; background: rgba(10,9,18,.55); }
+  .title h1 { font-size: 112px; line-height: 1; letter-spacing: -.02em; margin-top: 14px; text-shadow: 0 6px 30px rgba(0,0,0,.6); }
+  .title h1 span { display:block; font-family: "Noto Kufi Arabic"; font-size: 46px; color: var(--amber); margin-top: 6px; }
+  .title p { font-size: 23px; max-width: 700px; color: #fff; margin-top: 8px; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
+  .team { position: absolute; z-index: 2; bottom: 34px; left: 40px; display: grid; grid-template-columns: auto 1fr 1fr; gap: 10px 22px; align-items: center; background: rgba(10,9,18,.72); border: 1px solid var(--line); border-radius: 16px; padding: 12px 18px; white-space: nowrap; }
+  .team b { font-family: "JetBrains Mono"; color: var(--accent); font-size: 12px; letter-spacing: .14em; margin-right: 6px; }
+  .member { font-size: 15px; font-weight: 700; } .member small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; }
+  .sep { width: 1px; height: 30px; background: var(--line); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 34px; margin-top: -8px; position: relative; z-index: 3; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 15px; position: relative; overflow: hidden; }
+  .card h2 { font-size: 13px; font-family: "JetBrains Mono"; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .card h2::before { content: ""; width: 8px; height: 8px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 10px var(--accent); }
+  .muted { color: var(--muted); }
+  .kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 9px; }
+  .kv div { background: rgba(255,255,255,.04); border-radius: 10px; padding: 7px 9px; }
+  .kv b { display: block; font-family: "JetBrains Mono"; font-size: 15px; color: #fff; }
+  .kv small { color: var(--muted); font-size: 10.5px; }
+  .timeline { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin: 6px 0 9px; font-weight: 700; font-size: 11.5px; color: #0a0912; }
+  .timeline div { display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.05; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 14px; font-size: 12px; }
+  .modes i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+  .chart { width: 100%; height: 172px; object-fit: contain; display: block; }
+  ul.sys { list-style: none; columns: 2; column-gap: 16px; font-size: 11.2px; line-height:1.3; }
+  ul.sys li { break-inside: avoid; margin-bottom: 4px; } ul.sys li b { color: var(--blue); font-family: "JetBrains Mono"; font-size: 11px; letter-spacing: .06em; }
+  .img { width: 100%; max-height: 158px; object-fit: contain; border-radius: 10px; display: block; border: 1px solid var(--line); background: #fff; }
+  .row2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 12px; align-items: center; }
+  .pins { font-size: 11.4px; } .pins div { padding: 3px 0; border-bottom: 1px dashed var(--line); } .pins span { font-family: "JetBrains Mono"; color: var(--amber); display: inline-block; width: 44px; }
+  .link { font-family: "JetBrains Mono"; font-size: 11px; color: var(--accent); word-break: break-all; }
+  .qr { background: #fff; padding: 6px; border-radius: 8px; width: 104px; height: 104px; }
+  .flow { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:11px; } .flow span { background: rgba(79,209,165,.12); border:1px solid rgba(79,209,165,.4); color:#fff; border-radius:999px; padding:4px 9px; white-space:nowrap; } .flow em { color: var(--accent); font-style: normal; }
+  .learn { margin: 12px 34px 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .learn div { background: rgba(255,255,255,.04); border-radius: 10px; padding: 9px 10px; font-size: 11.8px; }
+  .learn b { display: block; color: var(--amber); font-size: 13px; margin-bottom: 3px; }
+  .logos { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; background: #fff; }
+  .foot { position: absolute; left: 34px; right: 34px; bottom: 100px; display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-family: "JetBrains Mono"; }
+</style>
+</head>
+<body>
+  <section class="hero"><div class="blur"></div><div class="shot"></div>
+    <div class="title">
+      <div class="tag">SATFORGE UAE 2026 · QUALIFIERS · TEAM KANBAN</div>
+      <h1>MARSAD-1<span>مرصد</span></h1>
+      <p>A 3U CubeSat that watches UAE coastal waters for harmful algal blooms</p>
+    </div>
+    <div class="team">
+      <b style="grid-row:span 2">TEAM<br>KANBAN</b>
+      <div class="member">Awaiz Ahmed<small>Mission lead · CDHS · Dashboard</small></div>
+      <div class="member">Mohammad Umar<small>EPS · Power budget</small></div>
+      <div class="member">Bilal Feroz<small>ADCS · Structure · 3D</small></div>
+      <div class="member">Maryam Alnaqbi<small>Payload · Comms · Science</small></div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Mission Objective</h2>
+      <p>Detect and map <b>red tides</b> and chlorophyll-a along the UAE coast of the Arabian Gulf and Gulf of Oman, giving <b>desalination plants, fisheries and coastal authorities</b> early warning. Blooms have forced UAE desalination plants to cut output and caused mass fish kills.</p>
+      <p class="muted" style="margin-top:6px"><b style="color:#fff">Success:</b> one cloud-free multispectral image of UAE waters per day and a bloom map to the ground within 24 h, for 6 months.</p>
+      <div class="kv">
+        <div><b>550 km SSO</b><small>i = 97.6°, 10:30 LTDN</small></div>
+        <div><b>95 min</b><small>orbit · 15 per day</small></div>
+        <div><b>12 months</b><small>design lifetime</small></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>CONOPS · one orbit</h2>
+      <div class="timeline">
+        <div style="width:42.1%;background:var(--amber)">Sun-pointing<br>40 min</div>
+        <div style="width:10.5%;background:var(--accent)">Imaging<br>10</div>
+        <div style="width:10.5%;background:var(--blue)">Downlink<br>10</div>
+        <div style="width:36.9%;background:var(--violet)">Safe / eclipse<br>35 min</div>
+      </div>
+      <div class="modes">
+        <div><i style="background:var(--amber)"></i><b>Sun-pointing</b> magnetorquers hold attitude, 6 cells charge the 25 Wh pack</div>
+        <div><i style="background:var(--accent)"></i><b>Nadir imaging</b> OV5640 + AS7341 over the Gulf, onboard NDCI</div>
+        <div><i style="background:var(--blue)"></i><b>Ground pass</b> LoRa 433 MHz alerts to Abu Dhabi GS (10° mask)</div>
+        <div><i style="background:var(--violet)"></i><b>Safe / eclipse</b> heater keeps battery &gt; 5 °C, minimal loads</div>
+      </div>
+      <div class="flow"><span>Image + spectra</span><em>→</em><span>Onboard NDCI</span><em>→</em><span>Bloom alert (kB)</span><em>→</em><span>LoRa pass</span><em>→</em><span>Dashboard</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Mass Budget</h2>
+      <img class="chart" src="chart_mass.png" alt="" />
+      <p class="muted" style="font-size:11.5px">Volume 501 of 3000 cm³ · Cost 1,420 of 3,000 AED · code: github.com/4waiz/marsad-1-dashboard</p>
+    </div>
+    <div class="card">
+      <h2>Power Budget</h2>
+      <img class="chart" src="chart_power.png" alt="" style="margin-top:6px" />
+      <p class="muted" style="font-size:11.5px;margin-top:4px">3.02 Wh used per orbit · 6 × 1.1 W cells · 2S Li-ion 7.4 V 3.4 Ah (25 Wh)</p>
+    </div>
+
+    <div class="card">
+      <h2>Subsystems / Components</h2>
+      <ul class="sys">
+        <li><b>CDHS</b><br>ESP32-S3 flight computer · 32 GB microSD</li>
+        <li><b>PAYLOAD</b><br>OV5640 5 MP camera · AS7341 11-ch spectral sensor</li>
+        <li><b>ADCS</b><br>ICM-20948 9-DoF IMU · 3-axis magnetorquers · NEO-M8N GPS</li>
+        <li><b>COMMS</b><br>SX1278 LoRa 433 MHz · deployable tape monopole</li>
+        <li><b>EPS</b><br>6 solar cells · 2S 18650 pack · CN3791 MPPT + BMS · MP1584 bucks · INA219</li>
+        <li><b>THERMAL</b><br>BME280 + DS18B20 sensors · Kapton battery heater</li>
+        <li><b>STRUCTURE</b><br>3U Al-6061 frame, PC/104 stack · 0.845 kg total</li>
+        <li><b>DATA</b><br>75 MB/day captured · 1.42 MB/day downlinked</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Tinker Circuit</h2>
+      <div class="row2">
+        <img class="img" src="../assets/tinkercad_circuit.png" alt="" />
+        <div class="pins">
+          <div><span>A0</span>TMP36 battery temp</div>
+          <div><span>A1</span>LDR sun / eclipse</div>
+          <div><span>A3</span>Battery-voltage pot</div>
+          <div><span>D13</span>Heater LED</div>
+          <div><span>D7</span>Imaging LED</div>
+          <div><span>D4</span>Downlink LED</div>
+          <div><span>D9</span>Antenna servo</div>
+        </div>
+      </div>
+      <p class="link" style="margin-top:6px">tinkercad.com/things/cY2kWDnTdZB</p>
+    </div>
+
+    <div class="card">
+      <h2>3D Design</h2>
+      <div class="row2" style="grid-template-columns:1fr 1fr">
+        <img class="img" src="../assets/cubesat_hero.png" alt="" style="background:#121128" />
+        <div style="font-size:11.6px">
+          <p>CubeSat Design Spec 3U envelope: <b>100 × 100 × 340.5 mm</b>, four 8.5 mm rails, 1U separator rings.</p>
+          <p style="margin-top:6px">72 body-mounted cells on 4 faces, nadir camera &amp; spectral window, GPS patch, kill switches and two deployed 433 MHz tape antennas.</p>
+          <p class="link" style="margin-top:6px">tinkercad.com/things/4Qi0WBiqTus</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Dashboard</h2>
+      <div class="row2" style="grid-template-columns:1.45fr 1fr">
+        <img class="img" src="../assets/dashboard_top.png" alt="" />
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.4px;text-align:center">
+          <div class="qr" id="qr"></div>
+          <span>Live orbit, power, thermal &amp; bloom-alert telemetry</span>
+          <span class="link">4waiz.github.io/marsad-1-dashboard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="learn">
+    <div style="grid-column:1/-1;background:none;padding:0 0 2px"><h2 style="font-family:'JetBrains Mono';font-size:13px;letter-spacing:.16em;color:var(--accent)">KEY LEARNINGS</h2></div>
+    <div><b>Budgets drive design</b>The power budget set the array at 6 cells and forced a heater duty cycle in eclipse.</div>
+    <div><b>Downlink is the bottleneck</b>75 MB/day captured vs 1.42 MB/day over LoRa, so bloom detection runs onboard.</div>
+    <div><b>Mass is easy, volume isn't</b>0.85 kg of 4 kg, but layout, cabling and heat paths fill a 3U fast.</div>
+    <div><b>Simulate first</b>Tinkercad let us test the mode logic and wiring before buying parts.</div>
+    <div><b>One source of truth</b>A shared live dashboard kept four subsystem owners in sync.</div>
+  </div>
+
+  
+  <div class="logos"></div>
+
+  <script>new QRCode(document.getElementById("qr"), { text: "https://4waiz.github.io/marsad-1-dashboard/", width: 92, height: 92, colorDark: "#0a0912", colorLight: "#ffffff" });</script>
+</body>
+</html>

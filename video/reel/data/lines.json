@@ -1,0 +1,71 @@
+{
+ "duration": 50.873,
+ "lines": [
+  {
+   "i": 0,
+   "text": "This is MARSAD one's flight computer, running in simulation.",
+   "s": 0.4,
+   "e": 3.977
+  },
+  {
+   "i": 1,
+   "text": "An Arduino stands in for our flight computer, wired to the same sensors.",
+   "s": 4.297,
+   "e": 8.891
+  },
+  {
+   "i": 2,
+   "text": "A temperature sensor watches the battery. A light sensor spots eclipse.",
+   "s": 9.211,
+   "e": 13.423
+  },
+  {
+   "i": 3,
+   "text": "A knob plays battery voltage, three lights show the mode, and a servo deploys the antenna.",
+   "s": 13.743,
+   "e": 19.312
+  },
+  {
+   "i": 4,
+   "text": "Every second, the code picks a mode: safe, charging, imaging, or ground pass.",
+   "s": 19.312,
+   "e": 24.238
+  },
+  {
+   "i": 5,
+   "text": "Power on. Battery full, sun in view: the green imaging light comes on.",
+   "s": 24.238,
+   "e": 28.969
+  },
+  {
+   "i": 6,
+   "text": "Five seconds after separation, the servo swings the antenna out.",
+   "s": 28.969,
+   "e": 32.89
+  },
+  {
+   "i": 7,
+   "text": "Every ten seconds, a ground pass. The blue downlink light takes over.",
+   "s": 32.89,
+   "e": 37.264
+  },
+  {
+   "i": 8,
+   "text": "Every reading streams out as J S O N, the format our live dashboard reads.",
+   "s": 37.6,
+   "e": 42.715
+  },
+  {
+   "i": 9,
+   "text": "Same logic, same data, from the bench to orbit.",
+   "s": 43.4,
+   "e": 46.325
+  },
+  {
+   "i": 10,
+   "text": "MARSAD one. Team Kanban.",
+   "s": 48.6,
+   "e": 50.273
+  }
+ ]
+}
