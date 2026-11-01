@@ -1,0 +1,42 @@
+[at 0.8]
+This is MARSAD one, from Team Kanban: a three U CubeSat that watches the UAE's coastal waters for harmful algal blooms.
+[pause 0.7]
+Red tides are a real threat in the Gulf.
+In 2008 and 2009, a bloom lasted for months, killed fish along the coast, and forced desalination plants to cut output or shut down.
+Desalination supplies most of the UAE's drinking water, so operators need a dedicated, daily early warning.
+[pause 0.7]
+MARSAD one flies in a five hundred and fifty kilometre sun-synchronous orbit, crossing the UAE every day at the same local time.
+Our success criterion: one usable, cloud-free image of UAE waters every day, and a bloom map to the ground team within twenty four hours, for six months.
+The payload computes the Normalised Difference Chlorophyll Index on board, comparing red-edge and red light, so only the alerts need to come down.
+[pause 0.7]
+Here is the system.
+An ESP thirty two S3 is the flight computer.
+The payload pairs an A S seven three four one spectral sensor with a five megapixel camera.
+An inertial sensor, GPS and three magnetorquers handle attitude.
+A LoRa radio with a deployable tape antenna talks to our Abu Dhabi ground station.
+Six solar cells charge a two-cell lithium-ion pack, and a Kapton heater keeps the battery warm in eclipse.
+[pause 0.7]
+Each ninety five minute orbit has four modes: forty minutes charging, ten minutes imaging, ten minutes over the ground station, and thirty five minutes in eclipse safe mode.
+With everything on, the load is three point nine watts against six point six watts generated: a two point seven watt margin.
+The satellite weighs zero point eight five kilograms of a four kilogram limit, and the parts cost one thousand four hundred and twenty dirhams, under our three thousand dirham budget.
+[pause 0.7]
+For the prototype, we started in Tinkercad.
+An Arduino stands in for the flight computer, with a battery temperature sensor, a light sensor for eclipse, a knob for battery voltage, three mode lights and a servo for the antenna.
+The firmware uses the same priority order as the flight software: power safety first, then the ground pass, then imaging.
+Here it runs: imaging mode, the antenna deploying five seconds after boot, and a ground pass every ten seconds, while one JSON packet streams out every second.
+[pause 0.7]
+The flight firmware for the ESP thirty two S3 is written and reads the real sensors: power, battery and board temperature, and the spectral bloom index.
+These shots are AI visualisations of that bench build; assembling and testing the physical board is our next step.
+[pause 0.7]
+Every packet feeds our mission control dashboard, built to the SpacePoint design manual: link status and packet age, colour-coded limits, time-stamped alarms, and a published data contract.
+To test it, we inject faults.
+A drained battery drops below twenty percent: the tiles turn red and the spacecraft enters safe mode.
+A cold battery trips the temperature alarm.
+When the link drops, the data goes stale after three seconds, and the link is declared lost after ten.
+Clear the faults, and everything recovers on its own.
+[pause 0.7]
+So far, seven of our thirteen tests pass in simulation, from the telemetry stream to antenna deployment and ground-pass scheduling.
+Four fault cases are verified through dashboard fault injection, and two need the physical board: the live USB link and the flight sensors.
+[pause 0.7]
+Next, we assemble the ESP thirty two bench model, calibrate the spectral sensor on clear and algae-rich water, and range-test the radio link.
+MARSAD one: a low-cost eye on the Gulf. Thank you from Team Kanban.

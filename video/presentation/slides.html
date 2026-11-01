@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MARSAD-1 presentation slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0912; --panel: #14111f; --panel-2: #1b1729; --line: #2a2440; --text: #ece9f7; --muted: #9b94b8;
+    --accent: #4fd1a5; --blue: #7c9cff; --violet: #a07cff; --amber: #f5b941; --red: #ff5d6c; --pink: #ff8fb1;
+    --mono: "JetBrains Mono", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: transparent; }
+  body { font-family: "Space Grotesk", sans-serif; color: var(--text); }
+  .slide { position: absolute; inset: 0; display: none; }
+  .slide.on { display: block; }
+  .bg { position: absolute; inset: 0; background: radial-gradient(1400px 700px at 85% -10%, #1d1440 0%, transparent 60%), var(--bg); }
+  /* background with a transparent window cut out where ffmpeg places footage */
+  .bg.cut {
+    -webkit-mask: linear-gradient(#000 0 0) 0 0 / 100% 100% no-repeat, linear-gradient(#000 0 0) var(--x) var(--y) / var(--w) var(--h) no-repeat;
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .win { position: absolute; left: var(--x); top: var(--y); width: var(--w); height: var(--h); border: 2px solid var(--line); border-radius: 4px; }
+  .win .wtag { position: absolute; right: 14px; bottom: 14px; font: 700 16px var(--mono); letter-spacing: 0.06em; padding: 6px 10px; border-radius: 4px; color: #0a0912; background: var(--amber); }
+  .win .wtag.real { background: var(--accent); }
+  .wcap { position: absolute; left: var(--x); top: calc(var(--y) + var(--h) + 16px); width: var(--w); font-size: 20px; color: var(--muted); }
+
+  .top { position: absolute; left: 90px; right: 90px; top: 56px; display: flex; justify-content: space-between; font: 600 18px var(--mono); letter-spacing: 0.12em; color: var(--muted); }
+  .top b { color: var(--accent); font-weight: 700; }
+  .prog { position: absolute; left: 90px; right: 90px; bottom: 48px; display: flex; gap: 8px; }
+  .prog i { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+  .prog i.done { background: rgba(79, 209, 165, 0.45); }
+  .prog i.cur { background: var(--accent); }
+  .kicker { font: 700 22px var(--mono); letter-spacing: 0.14em; color: var(--accent); text-transform: uppercase; }
+  h2 { font-size: 68px; line-height: 1.05; letter-spacing: -0.02em; margin-top: 14px; }
+  .lead { font-size: 30px; line-height: 1.4; color: #cfc9e6; margin-top: 22px; }
+  .col { position: absolute; top: 150px; left: 90px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px; }
+  .card .k { font: 600 16px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .card .v { font-size: 30px; font-weight: 700; margin-top: 6px; }
+  .card .s { font-size: 21px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+  .mono { font-family: var(--mono); }
+  .hl { outline: 3px solid var(--accent); box-shadow: 0 0 40px rgba(79, 209, 165, 0.35); }
+  .dim { opacity: 0.35; }
+
+  /* 1 title */
+  #s1 .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,9,18,0) 35%, rgba(10,9,18,0.9) 78%, rgba(10,9,18,0.97) 100%); }
+  #s1 .t { position: absolute; left: 110px; bottom: 150px; }
+  #s1 h1 { font-size: 190px; letter-spacing: -0.03em; line-height: 0.9; }
+  #s1 h1 small { font-size: 80px; color: var(--accent); margin-left: 24px; font-weight: 500; }
+  #s1 .sub { font-size: 40px; margin-top: 24px; color: #e3def5; }
+  #s1 .team { display: flex; gap: 40px; margin-top: 36px; font-size: 26px; color: var(--muted); }
+  #s1 .team b { color: var(--text); font-weight: 600; display: block; font-size: 28px; }
+  #s1 .meta { position: absolute; left: 110px; top: 70px; font: 700 22px var(--mono); letter-spacing: 0.14em; color: #fff; text-shadow: 0 2px 10px #000; }
+
+  /* 2 problem (over a still) */
+  #s2 .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,9,18,0.96) 0%, rgba(10,9,18,0.9) 44%, rgba(10,9,18,0.15) 75%, rgba(10,9,18,0) 100%); }
+  #s2 .stats { display: grid; gap: 18px; margin-top: 40px; width: 820px; }
+  #s2 .need { margin-top: 34px; font-size: 32px; font-weight: 700; color: var(--accent); width: 860px; line-height: 1.3; }
+  .tagc { position: absolute; right: 56px; bottom: 82px; font: 700 16px var(--mono); letter-spacing: 0.06em; padding: 6px 10px; border-radius: 4px; color: #0a0912; background: var(--amber); }
+
+  /* 3 mission */
+  #s3 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 34px; width: 840px; }
+  #s3 .eq { margin-top: 18px; font: 600 26px var(--mono); color: var(--accent); }
+
+  /* 4 architecture */
+  #s4 .arch { position: absolute; left: 90px; top: 300px; width: 1180px; height: 640px; }
+  #s4 .node { position: absolute; width: 360px; }
+  #s4 .node .v { font-size: 27px; }
+  #s4 .core { left: 410px; top: 220px; width: 360px; text-align: center; border-color: var(--accent); }
+  #s4 .core .v { font-size: 34px; color: var(--accent); }
+  #s4 svg { position: absolute; inset: 0; }
+  #s4 .render { position: absolute; right: 60px; top: 190px; width: 560px; height: 800px; object-fit: cover; border-radius: 14px; border: 1px solid var(--line); }
+
+  /* 5 conops + budgets */
+  #s5 .tl { position: absolute; left: 90px; right: 90px; top: 330px; height: 110px; display: flex; border-radius: 14px; overflow: hidden; }
+  #s5 .tl div { display: flex; flex-direction: column; justify-content: center; padding-left: 22px; color: #0a0912; font-weight: 700; font-size: 28px; }
+  #s5 .tl div span { font: 600 18px var(--mono); opacity: 0.8; }
+  #s5 .tlcap { position: absolute; left: 90px; top: 455px; font-size: 22px; color: var(--muted); }
+  #s5 .bud { position: absolute; left: 90px; right: 90px; top: 540px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  #s5 .bud .v { font-size: 44px; font-family: var(--mono); }
+  #s5 .meter { height: 12px; border-radius: 6px; background: var(--panel-2); margin-top: 18px; overflow: hidden; }
+  #s5 .meter i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--blue)); }
+
+  /* 6 implementation */
+  #s6 .pins { margin-top: 30px; width: 740px; border-collapse: collapse; font-size: 22px; }
+  #s6 .pins td { padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  #s6 .pins td:first-child { font-family: var(--mono); color: var(--accent); width: 90px; }
+  #s6 .prio { margin-top: 26px; width: 740px; }
+  #s6 .prio li { list-style: none; font-size: 23px; margin: 8px 0; }
+  #s6 .prio li b { display: inline-block; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #0a0912; text-align: center; line-height: 34px; margin-right: 12px; font-family: var(--mono); }
+  .json { position: absolute; left: 880px; top: 830px; width: 960px; font: 500 15.5px var(--mono); color: var(--accent); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; }
+
+  /* 7 hardware */
+  #s7 .list { margin-top: 30px; width: 720px; display: grid; gap: 14px; }
+  #s7 .list .card { padding: 16px 22px; }
+  #s7 .list .v { font-size: 25px; }
+  #s7 .list .s { font-size: 19px; }
+
+  /* 9 results */
+  #s9 table { position: absolute; left: 90px; top: 300px; width: 1740px; border-collapse: collapse; font-size: 21px; }
+  #s9 td, #s9 th { padding: 8px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+  #s9 th { font: 600 15px var(--mono); letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+  #s9 td:first-child { font-family: var(--mono); color: var(--muted); width: 50px; }
+  .chip { font: 700 15px var(--mono); letter-spacing: 0.08em; padding: 4px 10px; border-radius: 999px; border: 1px solid currentColor; }
+  .pass { color: var(--accent); } .partial { color: var(--amber); } .pending { color: var(--muted); }
+  #s9 .sum { position: absolute; right: 90px; top: 175px; display: flex; gap: 18px; }
+  #s9 .sum .card { text-align: center; min-width: 190px; padding: 14px 22px; }
+  #s9 .sum .v { font: 700 46px var(--mono); }
+
+  /* 10 close */
+  #s10 .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,9,18,0.97) 0%, rgba(10,9,18,0.92) 50%, rgba(10,9,18,0.4) 100%); }
+  #s10 .steps { margin-top: 34px; width: 900px; display: grid; gap: 16px; }
+  #s10 .steps .card { display: flex; gap: 20px; align-items: center; }
+  #s10 .steps b { font: 700 30px var(--mono); color: var(--accent); }
+  #s10 .thanks { position: absolute; left: 90px; top: 700px; }
+  #s10 .thanks .big { font-size: 64px; font-weight: 700; }
+  #s10 .thanks .links { margin-top: 16px; font: 600 24px var(--mono); color: var(--accent); line-height: 1.6; }
+  #s10 .disc { position: absolute; left: 90px; right: 90px; bottom: 82px; font-size: 19px; color: var(--muted); line-height: 1.45; }
+</style>
+</head>
+<body>
+
+<!-- 1 · title: over the opening orbit clip -->
+<section class="slide" id="s1">
+  <div class="shade"></div>
+  <div class="meta">SATFORGE UAE 2026 · QUALIFIERS · TEAM KANBAN (BSSDT4)</div>
+  <div class="t">
+    <h1>MARSAD-1<small>مرصد</small></h1>
+    <div class="sub">A 3U CubeSat watching the UAE's coastal waters for harmful algal blooms</div>
+    <div class="team">
+      <div><b>Awaiz Ahmed</b>Mission lead · CDHS · Dashboard</div>
+      <div><b>Mohammad Umar</b>EPS · Power</div>
+      <div><b>Bilal Feroz</b>ADCS · Structure · 3D</div>
+      <div><b>Maryam Alnaqbi</b>Payload · Comms</div>
+    </div>
+  </div>
+  <div class="tagc">AI VISUALISATION - MISSION CONCEPT</div>
+</section>
+
+<!-- 2 · problem: over a still of the bloom -->
+<section class="slide" id="s2" data-n="1">
+  <div class="shade"></div>
+  <div class="col">
+    <div class="kicker">01 · The problem</div>
+    <h2>Red tides threaten<br/>the UAE's water</h2>
+    <div class="stats">
+      <div class="card"><div class="k">2008 – 2009</div><div class="v">A bloom that lasted for months</div><div class="s">along the Gulf of Oman and Arabian Gulf coasts</div></div>
+      <div class="card"><div class="k">Desalination</div><div class="v">Plants forced to cut output or shut down</div><div class="s">desalination supplies most of the UAE's drinking water</div></div>
+      <div class="card"><div class="k">Fisheries</div><div class="v">Fish kills along the coast</div></div>
+    </div>
+    <div class="need">Needed: a dedicated, daily early warning for UAE waters.</div>
+  </div>
+  <div class="tagc">AI VISUALISATION - MISSION CONCEPT</div>
+</section>
+
+<!-- 3 · mission: window on the right -->
+<section class="slide" id="s3" data-n="2" style="--x:1010px;--y:250px;--w:820px;--h:462px">
+  <div class="bg cut"></div>
+  <div class="col">
+    <div class="kicker">02 · Mission</div>
+    <h2>A daily bloom map<br/>from orbit</h2>
+    <div class="grid">
+      <div class="card"><div class="k">Orbit</div><div class="v mono">SSO · 550 km</div><div class="s">i = 97.6° · 10:30 LTDN<br/>95 min · 15 orbits/day</div></div>
+      <div class="card"><div class="k">Platform</div><div class="v mono">3U CubeSat</div><div class="s">12-month mission<br/>Abu Dhabi ground station</div></div>
+      <div class="card" style="grid-column:1/-1"><div class="k">Success criterion</div><div class="s" style="color:var(--text);font-size:24px">One usable, cloud-free image of UAE waters every day, and a bloom map to the ground team within 24 h, for 6 consecutive months.</div></div>
+      <div class="card" style="grid-column:1/-1"><div class="k">On-board bloom index (NDCI)</div><div class="eq">(R708 − R665) / (R708 + R665)</div><div class="s">red-edge vs red light · only alerts are downlinked</div></div>
+    </div>
+  </div>
+  <div class="win"><span class="wtag">AI VISUALISATION</span></div>
+</section>
+
+<!-- 4 · architecture -->
+<section class="slide" id="s4" data-n="3">
+  <div class="bg"></div>
+  <div class="col">
+    <div class="kicker">03 · Design</div>
+    <h2>System architecture</h2>
+  </div>
+  <div class="arch">
+    <svg viewBox="0 0 1180 640" width="1180" height="640" aria-hidden="true">
+      <g stroke="#2a2440" stroke-width="3" fill="none">
+        <path d="M590 280 L180 70" /><path d="M590 280 L1000 70" /><path d="M590 280 L180 330" /><path d="M590 280 L1000 330" /><path d="M590 280 L180 560" /><path d="M590 280 L1000 560" />
+      </g>
+    </svg>
+    <div class="card node" data-h="2" style="left:0;top:0"><div class="k">Payload</div><div class="v">AS7341 spectral sensor</div><div class="s">+ OV5640 5 MP camera</div></div>
+    <div class="card node" data-h="3" style="left:820px;top:0"><div class="k">ADCS</div><div class="v">ICM-20948 IMU · GPS</div><div class="s">3-axis magnetorquers</div></div>
+    <div class="card node" data-h="0" style="left:0;top:262px"><div class="k">Storage</div><div class="v">32 GB microSD</div><div class="s">imagery + bloom flags</div></div>
+    <div class="card node core" data-h="1"><div class="k">CDHS</div><div class="v">ESP32-S3</div><div class="s">flight computer · NDCI on board</div></div>
+    <div class="card node" data-h="4" style="left:820px;top:262px"><div class="k">Comms</div><div class="v">SX1278 LoRa 433 MHz</div><div class="s">deployable tape antenna</div></div>
+    <div class="card node" data-h="5" style="left:0;top:500px"><div class="k">EPS</div><div class="v">6 × 1.1 W cells · 2S Li-ion</div><div class="s">MPPT charger · INA219 monitor</div></div>
+    <div class="card node" data-h="5" style="left:820px;top:500px"><div class="k">Thermal</div><div class="v">Kapton battery heater</div><div class="s">BME280 + DS18B20 sensors</div></div>
+  </div>
+  <img class="render" src="../../assets/cubesat_hero.png" alt="" />
+</section>
+
+<!-- 5 · conops + budgets -->
+<section class="slide" id="s5" data-n="4">
+  <div class="bg"></div>
+  <div class="col">
+    <div class="kicker">03 · Design</div>
+    <h2>Operations and budgets</h2>
+  </div>
+  <div class="tl" data-h="1">
+    <div style="width:42.1%;background:#f5b941">Sun pointing<span>40 min · charging</span></div>
+    <div style="width:10.5%;background:#4fd1a5">Imaging<span>10 min</span></div>
+    <div style="width:10.5%;background:#7c9cff">Ground pass<span>10 min</span></div>
+    <div style="width:36.9%;background:#a07cff">Eclipse · safe<span>35 min</span></div>
+  </div>
+  <div class="tlcap">One 95-minute orbit · CONOPS modes</div>
+  <div class="bud">
+    <div class="card" data-h="2"><div class="k">Power</div><div class="v">+2.68 W</div><div class="s">3.92 W load (all on) vs 6.60 W generated</div><div class="meter"><i style="width:59%"></i></div></div>
+    <div class="card" data-h="3"><div class="k">Mass</div><div class="v">0.845 kg</div><div class="s">of 4.0 kg limit · 79 % margin</div><div class="meter"><i style="width:21%"></i></div></div>
+    <div class="card" data-h="3"><div class="k">Cost</div><div class="v">1,420 AED</div><div class="s">of 3,000 AED budget</div><div class="meter"><i style="width:47%"></i></div></div>
+    <div class="card" data-h="3"><div class="k">Data</div><div class="v">75 MB/day</div><div class="s">2 GB on board · bloom alerts downlinked</div><div class="meter"><i style="width:4%"></i></div></div>
+  </div>
+</section>
+
+<!-- 6 · implementation: Tinkercad window -->
+<section class="slide" id="s6" data-n="5" style="--x:880px;--y:230px;--w:960px;--h:540px">
+  <div class="bg cut"></div>
+  <div class="col">
+    <div class="kicker">04 · Implementation</div>
+    <h2>Flight logic,<br/>simulated</h2>
+    <table class="pins">
+      <tr><td>A0</td><td>TMP36 · battery temperature</td></tr>
+      <tr><td>A1</td><td>Photoresistor · sun / eclipse</td></tr>
+      <tr><td>A3</td><td>Potentiometer · battery voltage → SoC</td></tr>
+      <tr><td>D13/7/4</td><td>Heater · imaging · downlink LEDs</td></tr>
+      <tr><td>D9</td><td>Servo · antenna deployment</td></tr>
+    </table>
+    <ul class="prio">
+      <li><b>1</b>Power safety: SoC &lt; 20 % or eclipse → SAFE</li>
+      <li><b>2</b>Ground pass (after antenna deploys)</li>
+      <li><b>3</b>Imaging when SoC &gt; 60 %, else charge</li>
+    </ul>
+  </div>
+  <div class="win"><span class="wtag real">REAL RECORDING · TINKERCAD</span></div>
+  <div class="json">{"soc":100.0,"v":8.40,"tbat":24.8,"sun":54,"mode":"nadir","heater":false,"antenna":true}</div>
+</section>
+
+<!-- 7 · hardware: AI window -->
+<section class="slide" id="s7" data-n="6" style="--x:880px;--y:230px;--w:960px;--h:540px">
+  <div class="bg cut"></div>
+  <div class="col">
+    <div class="kicker">05 · Prototype</div>
+    <h2>Flight-representative<br/>bench model</h2>
+    <div class="list">
+      <div class="card"><div class="v">INA219 · power</div><div class="s">bus voltage, current, coulomb counting</div></div>
+      <div class="card"><div class="v">BME280 + DS18B20 · temperature</div><div class="s">board and battery, drives the heater</div></div>
+      <div class="card"><div class="v">AS7341 · spectral bloom index</div><div class="s">665 / 708 nm channels → NDCI</div></div>
+      <div class="card" style="border-color:var(--amber)"><div class="v" style="color:var(--amber)">Status</div><div class="s">ESP32-S3 firmware written · physical assembly and bench tests are next</div></div>
+    </div>
+  </div>
+  <div class="win"><span class="wtag">AI VISUALISATION · PLANNED BUILD</span></div>
+</section>
+
+<!-- 9 · results -->
+<section class="slide" id="s9" data-n="8">
+  <div class="bg"></div>
+  <div class="col">
+    <div class="kicker">06 · Results</div>
+    <h2>Test results</h2>
+  </div>
+  <div class="sum">
+    <div class="card"><div class="v pass">7</div><div class="k">Pass</div></div>
+    <div class="card"><div class="v partial">4</div><div class="k">Partial</div></div>
+    <div class="card"><div class="v pending">2</div><div class="k">Pending</div></div>
+  </div>
+  <table>
+    <tr><th>#</th><th>Test</th><th>Method</th><th>Observed</th><th>Status</th></tr>
+    <tr data-h="1"><td>1</td><td>Boot and telemetry stream</td><td>Tinkercad</td><td>Banner, then JSON every second</td><td><span class="chip pass">PASS</span></td></tr>
+    <tr data-h="1"><td>2</td><td>Battery temperature (TMP36)</td><td>Tinkercad</td><td>24.8 °C at default 25 °C</td><td><span class="chip pass">PASS</span></td></tr>
+    <tr data-h="1"><td>3</td><td>Battery voltage → SoC</td><td>Tinkercad</td><td>8.40 V → 100 %</td><td><span class="chip pass">PASS</span></td></tr>
+    <tr data-h="1"><td>4</td><td>Sun detection</td><td>Tinkercad</td><td>sun 54 → sunlit, not safe</td><td><span class="chip pass">PASS</span></td></tr>
+    <tr data-h="1"><td>5</td><td>Antenna deployment</td><td>Tinkercad</td><td>Servo 0° → 90° at T+5 s</td><td><span class="chip pass">PASS</span></td></tr>
+    <tr data-h="1"><td>6</td><td>Nadir imaging mode</td><td>Tinkercad</td><td>Green LED on, mode nadir</td><td><span class="chip pass">PASS</span></td></tr>
+    <tr data-h="1"><td>7</td><td>Ground-pass scheduling</td><td>Tinkercad</td><td>gs for 2 s of every 10 s</td><td><span class="chip pass">PASS</span></td></tr>
+    <tr data-h="2"><td>8–11</td><td>Eclipse, low battery, cold battery, link loss</td><td>Dashboard fault injection</td><td>Alarms, SAFE mode, STALE → LINK LOST</td><td><span class="chip partial">PARTIAL</span></td></tr>
+    <tr data-h="2"><td>12</td><td>Live USB telemetry to dashboard</td><td>ESP32-S3 · Web Serial</td><td>Needs the physical board</td><td><span class="chip pending">PENDING</span></td></tr>
+    <tr data-h="2"><td>13</td><td>Flight sensors on the bench</td><td>ESP32-S3 build</td><td>Firmware written, hardware not assembled</td><td><span class="chip pending">PENDING</span></td></tr>
+  </table>
+</section>
+
+<!-- 10 · next steps + thanks: over a still -->
+<section class="slide" id="s10" data-n="9">
+  <div class="shade"></div>
+  <div class="col">
+    <div class="kicker">07 · Next steps</div>
+    <h2>From the bench to orbit</h2>
+    <div class="steps">
+      <div class="card"><b>1</b><div class="v" style="font-size:27px">Assemble the ESP32-S3 bench model and run tests 12–13</div></div>
+      <div class="card"><b>2</b><div class="v" style="font-size:27px">Calibrate the AS7341 on clear vs algae-rich water samples</div></div>
+      <div class="card"><b>3</b><div class="v" style="font-size:27px">Range-test the 433 MHz LoRa link to the ground station</div></div>
+    </div>
+  </div>
+  <div class="thanks">
+    <div class="big">Thank you · Team Kanban</div>
+    <div class="links">4waiz.github.io/marsad-1-dashboard<br/>github.com/4waiz/marsad-1-dashboard</div>
+  </div>
+  <div class="disc">Narration is synthetic (Kokoro TTS). Orbit and lab shots are AI-generated visualisations (ChatGPT images, Vidu video) of the mission concept and the planned bench build. The Tinkercad simulation and the dashboard fault tests are real, unedited screen recordings, sped up where marked.</div>
+</section>
+
+<script>
+  const p = new URLSearchParams(location.search);
+  const s = document.getElementById("s" + (p.get("s") || "1"));
+  s.classList.add("on");
+  // highlight state: data-h elements matching h are lit, others dimmed (h=0 → nothing dimmed)
+  const h = Number(p.get("h") || 0);
+  if (h) s.querySelectorAll("[data-h]").forEach((e) => e.classList.add(Number(e.dataset.h) === h ? "hl" : "dim"));
+  if (h && s.id === "s9") s.querySelectorAll("tr.hl").forEach((e) => { e.classList.remove("hl"); e.style.background = "rgba(79,209,165,0.08)"; });
+  // progress bar: 10 sections
+  if (s.dataset.n) {
+    const n = Number(s.dataset.n);
+    const bar = document.createElement("div");
+    bar.className = "prog";
+    bar.innerHTML = Array.from({ length: 10 }, (_, i) => `<i class="${i < n ? "done" : i === n ? "cur" : ""}"></i>`).join("");
+    s.appendChild(bar);
+    const top = document.createElement("div");
+    top.className = "top";
+    top.innerHTML = `<span><b>MARSAD-1</b> · TEAM KANBAN</span><span>${String(n + 1).padStart(2, "0")} / 10</span>`;
+    s.appendChild(top);
+  }
+</script>
+</body>
+</html>

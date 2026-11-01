@@ -12,3 +12,9 @@ video/demo/img/
 video/demo/audio/*.wav
 video/demo/*_sheet*.jpg
 video/demo/d2_chk.jpg
+video/presentation/seg/
+video/presentation/out/
+video/presentation/png/
+video/presentation/stills/
+video/presentation/audio/*.wav
+video/presentation/*_sheet*.jpg

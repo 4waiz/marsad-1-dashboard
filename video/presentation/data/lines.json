@@ -1,0 +1,197 @@
+{
+ "duration": 232.876,
+ "lines": [
+  {
+   "i": 0,
+   "text": "This is MARSAD one, from Team Kanban: a three U CubeSat that watches the UAE's coastal waters for harmful algal blooms.",
+   "s": 0.8,
+   "e": 8.727
+  },
+  {
+   "i": 1,
+   "text": "Red tides are a real threat in the Gulf.",
+   "s": 9.747,
+   "e": 11.909
+  },
+  {
+   "i": 2,
+   "text": "In 2008 and 2009, a bloom lasted for months, killed fish along the coast, and forced desalination plants to cut output or shut down.",
+   "s": 12.229,
+   "e": 22.036
+  },
+  {
+   "i": 3,
+   "text": "Desalination supplies most of the UAE's drinking water, so operators need a dedicated, daily early warning.",
+   "s": 22.356,
+   "e": 29.286
+  },
+  {
+   "i": 4,
+   "text": "MARSAD one flies in a five hundred and fifty kilometre sun-synchronous orbit, crossing the UAE every day at the same local time.",
+   "s": 30.306,
+   "e": 38.486
+  },
+  {
+   "i": 5,
+   "text": "Our success criterion: one usable, cloud-free image of UAE waters every day, and a bloom map to the ground team within twenty four hours, for six months.",
+   "s": 38.806,
+   "e": 48.712
+  },
+  {
+   "i": 6,
+   "text": "The payload computes the Normalised Difference Chlorophyll Index on board, comparing red-edge and red light, so only the alerts need to come down.",
+   "s": 49.032,
+   "e": 57.481
+  },
+  {
+   "i": 7,
+   "text": "Here is the system.",
+   "s": 58.501,
+   "e": 59.598
+  },
+  {
+   "i": 8,
+   "text": "An ESP thirty two S3 is the flight computer.",
+   "s": 59.918,
+   "e": 63.062
+  },
+  {
+   "i": 9,
+   "text": "The payload pairs an A S seven three four one spectral sensor with a five megapixel camera.",
+   "s": 63.382,
+   "e": 69.049
+  },
+  {
+   "i": 10,
+   "text": "An inertial sensor, GPS and three magnetorquers handle attitude.",
+   "s": 69.369,
+   "e": 73.68
+  },
+  {
+   "i": 11,
+   "text": "A LoRa radio with a deployable tape antenna talks to our Abu Dhabi ground station.",
+   "s": 74.0,
+   "e": 79.284
+  },
+  {
+   "i": 12,
+   "text": "Six solar cells charge a two-cell lithium-ion pack, and a Kapton heater keeps the battery warm in eclipse.",
+   "s": 79.604,
+   "e": 86.142
+  },
+  {
+   "i": 13,
+   "text": "Each ninety five minute orbit has four modes: forty minutes charging, ten minutes imaging, ten minutes over the ground station, and thirty five minutes in eclipse safe mode.",
+   "s": 87.162,
+   "e": 97.124
+  },
+  {
+   "i": 14,
+   "text": "With everything on, the load is three point nine watts against six point six watts generated: a two point seven watt margin.",
+   "s": 97.444,
+   "e": 105.08
+  },
+  {
+   "i": 15,
+   "text": "The satellite weighs zero point eight five kilograms of a four kilogram limit, and the parts cost one thousand four hundred and twenty dirhams, under our three thousand dirham budget.",
+   "s": 105.4,
+   "e": 116.033
+  },
+  {
+   "i": 16,
+   "text": "For the prototype, we started in Tinkercad.",
+   "s": 117.053,
+   "e": 119.548
+  },
+  {
+   "i": 17,
+   "text": "An Arduino stands in for the flight computer, with a battery temperature sensor, a light sensor for eclipse, a knob for battery voltage, three mode lights and a servo for the antenna.",
+   "s": 119.868,
+   "e": 130.484
+  },
+  {
+   "i": 18,
+   "text": "The firmware uses the same priority order as the flight software: power safety first, then the ground pass, then imaging.",
+   "s": 130.804,
+   "e": 138.148
+  },
+  {
+   "i": 19,
+   "text": "Here it runs: imaging mode, the antenna deploying five seconds after boot, and a ground pass every ten seconds, while one JSON packet streams out every second.",
+   "s": 138.468,
+   "e": 148.905
+  },
+  {
+   "i": 20,
+   "text": "The flight firmware for the ESP thirty two S3 is written and reads the real sensors: power, battery and board temperature, and the spectral bloom index.",
+   "s": 149.924,
+   "e": 159.707
+  },
+  {
+   "i": 21,
+   "text": "These shots are AI visualisations of that bench build; assembling and testing the physical board is our next step.",
+   "s": 160.027,
+   "e": 166.844
+  },
+  {
+   "i": 22,
+   "text": "Every packet feeds our mission control dashboard, built to the SpacePoint design manual: link status and packet age, colour-coded limits, time-stamped alarms, and a published data contract.",
+   "s": 167.864,
+   "e": 179.557
+  },
+  {
+   "i": 23,
+   "text": "To test it, we inject faults.",
+   "s": 179.877,
+   "e": 181.49
+  },
+  {
+   "i": 24,
+   "text": "A drained battery drops below twenty percent: the tiles turn red and the spacecraft enters safe mode.",
+   "s": 181.81,
+   "e": 187.953
+  },
+  {
+   "i": 25,
+   "text": "A cold battery trips the temperature alarm.",
+   "s": 188.273,
+   "e": 190.584
+  },
+  {
+   "i": 26,
+   "text": "When the link drops, the data goes stale after three seconds, and the link is declared lost after ten.",
+   "s": 190.904,
+   "e": 196.787
+  },
+  {
+   "i": 27,
+   "text": "Clear the faults, and everything recovers on its own.",
+   "s": 197.107,
+   "e": 199.915
+  },
+  {
+   "i": 28,
+   "text": "So far, seven of our thirteen tests pass in simulation, from the telemetry stream to antenna deployment and ground-pass scheduling.",
+   "s": 200.935,
+   "e": 209.217
+  },
+  {
+   "i": 29,
+   "text": "Four fault cases are verified through dashboard fault injection, and two need the physical board: the live USB link and the flight sensors.",
+   "s": 209.537,
+   "e": 217.724
+  },
+  {
+   "i": 30,
+   "text": "Next, we assemble the ESP thirty two bench model, calibrate the spectral sensor on clear and algae-rich water, and range-test the radio link.",
+   "s": 218.744,
+   "e": 227.832
+  },
+  {
+   "i": 31,
+   "text": "MARSAD one: a low-cost eye on the Gulf. Thank you from Team Kanban.",
+   "s": 228.152,
+   "e": 232.276
+  }
+ ]
+}
