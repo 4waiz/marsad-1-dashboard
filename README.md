@@ -32,6 +32,25 @@ Time warp (1×–300×) speeds the simulation up so a full orbit can be watched 
 | Cost | 1,420 AED | 3,000 AED → 1,580 AED margin |
 | Data | 75 MB/day generated, 1.42 MB/day downlinked | 2 GB onboard |
 
+## Tinkercad circuit
+
+**Circuit:** https://www.tinkercad.com/things/cY2kWDnTdZB — *Team Kanban – Circuit Design - Awaiz Ahmed*
+
+Arduino Uno stand-in for the flight computer (`firmware/tinkercad_prototype/tinkercad_prototype.ino`):
+
+| Pin | Part | Role |
+|---|---|---|
+| A0 | TMP36 | Battery temperature |
+| A1 | Photoresistor + 10 kΩ pull-down | Sun sensor (sunlit / eclipse) |
+| A3 | Potentiometer (3.3 V) | Battery-voltage stand-in → state of charge |
+| D13 | Red LED + 220 Ω | Battery heater |
+| D7 | Green LED + 220 Ω | Payload imaging (nadir mode) |
+| D4 | Blue LED + 220 Ω | UHF downlink / ground pass |
+| D9 | Micro servo | Antenna deployment (5 s after boot) |
+
+The sketch runs the CONOPS mode logic (safe / sun-pointing / nadir imaging / ground pass) and prints the same
+JSON telemetry the dashboard reads.
+
 ## Prototype link
 
 `firmware/marsad_telemetry/marsad_telemetry.ino` runs on the ESP32-S3 and prints one JSON line per
