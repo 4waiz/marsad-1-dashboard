@@ -8,6 +8,22 @@ Gulf of Oman, giving desalination plants, fisheries and coastal authorities earl
 
 **Live dashboard:** https://4waiz.github.io/marsad-1-dashboard/
 
+
+## Phase 1 deliverables
+
+| Item | Link |
+|---|---|
+| Live dashboard | https://4waiz.github.io/marsad-1-dashboard/ |
+| Tinkercad circuit | https://www.tinkercad.com/things/cY2kWDnTdZB |
+| Tinkercad 3D design | https://www.tinkercad.com/things/4Qi0WBiqTus |
+| Simulation video | https://4waiz.github.io/marsad-1-dashboard/video/MARSAD-1_simulation.mp4 |
+| Phase 1 report (PDF) | https://4waiz.github.io/marsad-1-dashboard/report/MARSAD-1_Phase1_Report.pdf |
+| Phase 1 report (web) | https://4waiz.github.io/marsad-1-dashboard/report/ |
+| A2 poster (PNG) | https://4waiz.github.io/marsad-1-dashboard/poster/MARSAD-1_poster_A2.png |
+
+Sources: `cad/` (STL generator + Blender render script), `poster/` (HTML poster + charts), `report/`, `video/` (kanban-motion reel, voiceover script, cue sheet).
+The poster hero image was generated with ChatGPT image generation; the simulation video narration is synthetic (Kokoro).
+
 ## What the dashboard shows
 
 | Section | Contents |
