@@ -1,0 +1,28 @@
+[at 0.6]
+This is MARSAD one, Team Kanban's three U CubeSat for spotting harmful algal blooms off the UAE coast.
+[at 5.6]
+On the bench: an ESP thirty two S3 flight computer, a spectral sensor, a camera and a LoRa radio.
+[at 11.0]
+Every second it reads power, temperature and light, and decides what the satellite should do.
+[at 16.2]
+After separation, a servo releases the tape antenna.
+[at 20.6]
+The payload compares red and near infrared light to flag water thick with algae.
+[at 25.8]
+Here is that flight logic running in simulation. Green means imaging.
+[at 31.0]
+Five seconds after boot, the antenna deploys.
+[at 35.4]
+Every ten seconds, a ground pass lights the downlink LED, and every reading streams out as JSON.
+[at 45.6]
+That JSON feeds our mission control dashboard. We inject faults to test it.
+[at 51.0]
+A drained battery turns the tiles red and forces safe mode. A cold battery trips the heater alarm.
+[at 58.4]
+When the link drops, every value goes grey and stale, then link lost.
+[at 64.6]
+Clear the faults, and it recovers on its own.
+[at 69.6]
+Same code, same data, from the bench to orbit.
+[at 75.0]
+MARSAD one. Team Kanban.

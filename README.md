@@ -17,6 +17,7 @@ Gulf of Oman, giving desalination plants, fisheries and coastal authorities earl
 | Tinkercad circuit | https://www.tinkercad.com/things/cY2kWDnTdZB |
 | Tinkercad 3D design | https://www.tinkercad.com/things/4Qi0WBiqTus |
 | Simulation video | https://4waiz.github.io/marsad-1-dashboard/video/MARSAD-1_simulation.mp4 |
+| Prototype demo video | https://4waiz.github.io/marsad-1-dashboard/video/MARSAD-1_prototype_demo.mp4 |
 | Phase 1 report (PDF) | https://4waiz.github.io/marsad-1-dashboard/report/MARSAD-1_Phase1_Report.pdf |
 | Phase 1 report (web) | https://4waiz.github.io/marsad-1-dashboard/report/ |
 | A2 poster (PNG) | https://4waiz.github.io/marsad-1-dashboard/poster/MARSAD-1_poster_A2.png |
@@ -26,6 +27,7 @@ Gulf of Oman, giving desalination plants, fisheries and coastal authorities earl
 
 Sources: `cad/` (STL generator + Blender render script), `poster/` (HTML poster + charts), `report/`, `video/` (kanban-motion reel, voiceover script, cue sheet).
 The poster hero image was generated with ChatGPT image generation; the simulation video narration is synthetic (Kokoro).
+In the prototype demo video, the lab and orbit shots are AI-generated visualisations of the planned hardware build (ChatGPT images animated with Vidu) and are labelled as such on screen. The Tinkercad simulation and the dashboard fault-injection tests are real screen recordings. Edit sources are in `video/demo/` (`build.sh`, `script.txt`, `cues.json`).
 
 ## What the dashboard shows
 

@@ -1,0 +1,14 @@
+{
+ "duration": 80.0,
+ "voice": { "file": "audio/voiceover.wav", "db": 0 },
+ "music": { "file": "audio/music.wav", "db": -15, "fade_in": 0.6, "fade_out": 2.5 },
+ "sfx": [
+  { "file": "sfx:interface/drop_002.ogg", "t": 0.5, "db": -18 },
+  { "file": "sfx:interface/switch_002.ogg", "t": 7.35, "db": -22 },
+  { "file": "sfx:interface/switch_002.ogg", "t": 27.45, "db": -21 },
+  { "file": "sfx:interface/switch_005.ogg", "t": 45.35, "db": -20 },
+  { "file": "sfx:interface/select_008.ogg", "t": 51.0, "db": -22 },
+  { "file": "sfx:interface/select_008.ogg", "t": 58.4, "db": -22 },
+  { "file": "sfx:interface/bong_001.ogg", "t": 74.6, "db": -18 }
+ ]
+}

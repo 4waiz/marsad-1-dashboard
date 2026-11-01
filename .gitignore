@@ -5,3 +5,10 @@ video/reel/audio/*.wav
 poster/poster_draft.png
 video/out/
 .claude/
+video/demo/clips/
+video/demo/seg/
+video/demo/out/
+video/demo/img/
+video/demo/audio/*.wav
+video/demo/*_sheet*.jpg
+video/demo/d2_chk.jpg
