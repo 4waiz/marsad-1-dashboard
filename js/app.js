@@ -1,7 +1,8 @@
-import { MISSION, TEAM, MODES, COMPONENTS, BUDGET, DATA_BUDGET, GROUND_STATION, ASSETS, TARGET_BOX, CONTRACT, STALE_SEC, LOST_SEC } from "./data.js";
+import { MISSION, TEAM, MODES, COMPONENTS, BUDGET, DATA_BUDGET, GROUND_STATION, ASSETS, TARGET_BOX, CONTRACT, STALE_SEC, LOST_SEC, SUBSYSTEMS, SUB_COLORS } from "./data.js";
 import { FIELD, STATUS_TEXT, formatValue, fieldStatus, limitText } from "./health.js";
 import { makeOrbit, stateAt, elevationDeg, visibilityRadiusKm, haversineKm, splitTrack } from "./orbit.js";
 import { renderBloom } from "./bloom.js";
+import { createAdcs } from "./adcs.js";
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n, d = 1) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -15,8 +16,6 @@ const MODE_IDX = { sun: 0, nadir: 1, gs: 2, safe: 3 };
 const modeLoadW = MODES.map((_, i) => COMPONENTS.filter((c) => c.on[i]).reduce((s, c) => s + unitPower(c), 0) / 1000);
 const GEN_PEAK_W = BUDGET.solarCells * BUDGET.wattsPerCell;
 const SUN_FACTOR = { sun: 0.85, nadir: 0.55, gs: 0.6, safe: 0 };
-const SUBSYSTEMS = ["CDHS", "Payload", "ADCS", "COMMS", "EPS", "Thermal", "Structure"];
-const SUB_COLORS = ["#7c9cff", "#4fd1a5", "#f5b941", "#ff8fb1", "#a07cff", "#ff6b7a", "#8ad8ff"];
 
 // ---------- chart defaults ----------
 Chart.defaults.color = "#9b94b8";
@@ -30,7 +29,7 @@ const orbit = makeOrbit({ altitudeKm: 550, inclinationDeg: 97.6, ltanHours: 22.5
 let simTime = new Date();
 let warp = 60;
 const sim = { soc: 78, tInt: 18, tBat: 14, tPanel: 20, storageMB: 412, heater: false, mode: null, eclipse: null, inPass: false, lastSample: 0 };
-const faults = { lowBatt: false, cold: false, link: false, glitch: false };
+const faults = { lowBatt: false, cold: false, link: false, glitch: false, tumble: false };
 const MAX_POINTS = 200;
 const bootAt = performance.now();
 
@@ -67,7 +66,7 @@ function stepPhysics(dtSec, realDtSec, mode, eclipse) {
 }
 
 // What the spacecraft would downlink this second, following the data contract.
-function simPacket(st, mode, p) {
+function simPacket(st, mode, p, att) {
   const pkt = {
     t: Math.round((performance.now() - bootAt) / 1000),
     mode,
@@ -84,7 +83,9 @@ function simPacket(st, mode, p) {
     lon: +st.lon.toFixed(2),
     heater: sim.heater,
     antenna: true,
+    rate: att.rate,
   };
+  if (att.perr !== null) pkt.perr = att.perr;
   if (mode === "nadir") pkt.ndci = +(0.05 + 0.04 * Math.sin(simTime.getTime() / 4e5)).toFixed(3);
   if (faults.glitch) {
     pkt.soc = 137.5; // impossible value → INVALID
@@ -180,6 +181,7 @@ const chTemp = lineChart("chTemp", [
 ], { limits: [{ y: 45, color: CRIT, label: "battery crit 45 °C" }, { y: 5, color: WARN, label: "battery warn 5 °C" }, { y: 0, color: CRIT, label: "battery crit 0 °C" }] });
 const chData = lineChart("chData", [{ label: "Storage", borderColor: "#a07cff", fill: true, backgroundColor: "rgba(160,124,255,0.08)" }], { y: { min: 0 }, limits: [{ y: 1600, color: WARN, label: "warn 1600 MB" }] });
 const teleCharts = [chSoc, chPower, chTemp, chData];
+const adcs = createAdcs(orbit);
 
 function pushSample(label, values) {
   teleCharts.forEach((c, ci) => {
@@ -300,12 +302,14 @@ let pktCount = 0;
 let rejected = 0;
 let newSinceSample = false;
 let warming = false;
+let lastKeys = []; // fields in the newest packet (an omitted optional field is not carried forward on the chart)
 
 function ingest(pkt) {
   if (faults.link) return; // nothing reaches the ground station
   const now = performance.now();
   for (const [k, v] of Object.entries(pkt)) if (FIELD[k]) latest[k] = { v, at: now };
   lastPktAt = now;
+  lastKeys = Object.keys(pkt);
   pktCount++;
   newSinceSample = true;
 }
@@ -472,12 +476,13 @@ $("ackBtn").addEventListener("click", () => {
 });
 
 // Fault injection
-const FAULT_TEXT = { lowBatt: "Low battery", cold: "Cold battery (heater fault)", link: "Link loss", glitch: "Sensor glitch" };
+const FAULT_TEXT = { lowBatt: "Low battery", cold: "Cold battery (heater fault)", link: "Link loss", glitch: "Sensor glitch", tumble: "Magnetorquer fault (tumble)" };
 document.querySelectorAll("[data-fault]").forEach((b) =>
   b.addEventListener("click", () => {
     const f = b.dataset.fault;
     faults[f] = !faults[f];
     b.setAttribute("aria-pressed", String(faults[f]));
+    if (f === "tumble" && faults[f]) adcs.spinUp();
     logEvent(simTime, `<b>Test</b> fault ${faults[f] ? "injected" : "removed"}: ${FAULT_TEXT[f]}`);
     refreshStatus();
   })
@@ -486,6 +491,7 @@ $("clearFaults").addEventListener("click", () => {
   Object.keys(faults).forEach((f) => (faults[f] = false));
   document.querySelectorAll("[data-fault]").forEach((b) => b.setAttribute("aria-pressed", "false"));
   Object.assign(sim, { soc: Math.max(sim.soc, 78), tBat: Math.max(sim.tBat, 14), heater: false });
+  adcs.quiet();
   logEvent(simTime, "<b>Test</b> all faults cleared, spacecraft model reset to nominal");
 });
 
@@ -494,7 +500,7 @@ function renderContract() {
   $("contractTable").innerHTML = `<thead><tr><th>Field</th><th>Type</th><th>Unit</th><th>Limits</th><th>Req.</th><th>Meaning</th></tr></thead><tbody>${CONTRACT.map(
     (c) => `<tr><td>${c.key}</td><td>${c.type}</td><td>${c.unit || "—"}</td><td class="lim">${limitText(c)}</td><td>${c.required ? "yes" : ""}</td><td class="desc">${c.desc}</td></tr>`
   ).join("")}</tbody>`;
-  $("examplePkt").textContent = JSON.stringify({ t: 5412, mode: "nadir", soc: 82.4, v: 7.98, gen: 3.61, load: 2.95, tbat: 17.2, tint: 21.6, tpanel: 48.3, storage: 436, sun: 86, ndci: 0.071, lat: 25.12, lon: 55.4, heater: false, antenna: true }, null, 1);
+  $("examplePkt").textContent = JSON.stringify({ t: 5412, mode: "nadir", soc: 82.4, v: 7.98, gen: 3.61, load: 2.95, tbat: 17.2, tint: 21.6, tpanel: 48.3, storage: 436, sun: 86, ndci: 0.071, lat: 25.12, lon: 55.4, rate: 0.12, perr: 4.8, heater: false, antenna: true }, null, 1);
 }
 
 // ---------- main loop ----------
@@ -515,7 +521,8 @@ function tick(realDtSec) {
   sim.inPass = inPass;
 
   const p = stepPhysics(dt, realDtSec, simMode, st.eclipse);
-  if (source === "sim") ingest(simPacket(st, simMode, p));
+  const att = adcs.step(dt, simTime, simMode, faults.tumble);
+  if (source === "sim") ingest(simPacket(st, simMode, p, att));
 
   // Everything below is drawn from received packets only; stale or missing fields show as gaps.
   const pktMode = fresh("mode");
@@ -549,6 +556,7 @@ function tick(realDtSec) {
     newSinceSample = false;
     const label = source === "live" ? hhmmss(new Date()) : hhmm(simTime);
     pushSample(label, [[fresh("soc")], [fresh("gen"), fresh("load")], [fresh("tint"), fresh("tbat"), fresh("tpanel")], [fresh("storage")]]);
+    adcs.sample(label, lastKeys.includes("perr") ? fresh("perr") : null, fresh("rate"));
   }
 }
 

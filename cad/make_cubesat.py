@@ -3,9 +3,12 @@
 Each part file carries two tiny alignment markers at the overall bounding-box corners so
 that importers which re-centre every file (e.g. Tinkercad) keep the parts aligned.
 
-    python make_cubesat.py   ->  structure.stl, solar_cells.stl, payload.stl, antennas.stl
+    python make_cubesat.py   ->  structure.stl, solar_cells.stl, payload.stl, antennas.stl, internals.stl
+
+internals.stl is the avionics stack placed by layout.json (the same layout the mass properties use).
 """
 
+import json
 import math
 import struct
 from pathlib import Path
@@ -105,6 +108,18 @@ def payload():
     return t
 
 
+def internals():
+    t = []
+    layout = json.loads((OUT / "layout.json").read_text(encoding="utf8"))
+    for p in layout["parts"]:
+        # frame, cell skins and antennas are already modelled in the other parts
+        if p["sub"] == "Structure" or p["name"].startswith("Solar array") or p["bom"].startswith("Deployable"):
+            continue
+        (cx, cy, cz), (dx, dy, dz) = p["center"], p["size"]
+        t += box(cx - dx / 2, cx + dx / 2, cy - dy / 2, cy + dy / 2, cz - dz / 2, cz + dz / 2)
+    return t
+
+
 def antennas():
     t = []
     t += box(W, 270, 48, 52, H - 12, H - 11)                        # deployed 433 MHz tape antenna (+X)
@@ -120,3 +135,4 @@ if __name__ == "__main__":
     write_stl("solar_cells.stl", solar_cells())
     write_stl("payload.stl", payload())
     write_stl("antennas.stl", antennas())
+    write_stl("internals.stl", internals())

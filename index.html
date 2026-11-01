@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
 </head>
 <body>
   <header class="top">
@@ -43,6 +44,7 @@
     <a href="#status">Status</a>
     <a href="#health">Alarms &amp; readings</a>
     <a href="#ops">Operations</a>
+    <a href="#adcs">ADCS &amp; structure</a>
     <a href="#telemetry">Telemetry</a>
     <a href="#bloom">Bloom watch</a>
     <a href="#conops">CONOPS</a>
@@ -79,6 +81,7 @@
           <button class="btn-ghost" data-fault="cold" aria-pressed="false">Cold battery (heater fault)</button>
           <button class="btn-ghost" data-fault="link" aria-pressed="false">Link loss</button>
           <button class="btn-ghost" data-fault="glitch" aria-pressed="false">Sensor glitch</button>
+          <button class="btn-ghost" data-fault="tumble" aria-pressed="false">Magnetorquer fault (tumble)</button>
           <button class="btn-ghost" id="clearFaults">Clear all</button>
         </div>
         <p class="muted small">Faults act on the simulated spacecraft, not on the display: the ground segment only sees the packets that result, exactly as it would in orbit.</p>
@@ -119,6 +122,63 @@
         <ul class="subs" id="subsList"></ul>
         <h3>Event log</h3>
         <ol class="log" id="eventLog"></ol>
+      </div>
+    </section>
+
+    <section id="adcs" class="grid adcs" aria-label="Attitude control and structure">
+      <div class="card view-card">
+        <div class="card-h">
+          <h2>Attitude — live 3D view in the orbit frame</h2>
+          <div class="view-ctrl">
+            <label class="filter"><input type="checkbox" id="showInternals" /> Show internals</label>
+            <span class="chip">SIMULATED</span>
+          </div>
+        </div>
+        <div id="attView" class="att-view" role="img" aria-label="3D model of MARSAD-1 in its current attitude with the sun, nadir and ground-station directions"></div>
+        <div class="legend">
+          <span><i style="background:#f5b941"></i>Sun</span>
+          <span><i style="background:#4fd1a5"></i>Nadir</span>
+          <span><i style="background:#7c9cff"></i>Ground station (in pass)</span>
+          <span><i style="background:#9b94b8"></i>Velocity</span>
+          <span>Body axes X red · Y green · Z blue (camera looks −Z) · drag to orbit, scroll to zoom</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>ADCS state</h2><span class="unit">magnetorquers only</span></div>
+        <dl class="state">
+          <div class="wide"><dt>Target</dt><dd id="aMode">—</dd></div>
+          <div class="wide"><dt>Control</dt><dd id="aPhase">—</dd></div>
+          <div><dt>Pointing error</dt><dd id="aErr">—</dd></div>
+          <div><dt>Camera off-nadir</dt><dd id="aNadir">—</dd></div>
+          <div><dt>Sun on array</dt><dd id="aSun">—</dd></div>
+          <div><dt>Body rate</dt><dd id="aRate">—</dd></div>
+          <div><dt>Field |B|</dt><dd id="aB">—</dd></div>
+          <div><dt>Sensors</dt><dd>ICM-20948 · GPS</dd></div>
+        </dl>
+        <h3>Magnetorquer dipole (A·m², limit ±0.2)</h3>
+        <div class="dipoles" id="aDipole"></div>
+        <p class="muted small">Two-axis pointing: the boresight (camera −Z, or the +X/+Y array edge for the sun) is driven onto its target and rotation about it is only rate-damped. Above 1.5 °/s the ADCS drops into B-dot rate damping. Magnetorquers are off in safe mode, as in the CONOPS.</p>
+      </div>
+      <div class="card half">
+        <div class="card-h"><h2>Pointing error &amp; body rate</h2><span class="unit">° · °/s</span></div>
+        <div class="chart-box"><canvas id="chPoint"></canvas></div>
+        <p class="muted small">Gaps are safe-mode periods with no pointing target. Simulated over 8 residual-dipole cases × 4 epochs × 5 orbits of the CONOPS timeline: sun pointing ≈ 5.5° and nadir ≈ 14° median five minutes into the mode; slews to within 10° take 4–6 min.</p>
+      </div>
+      <div class="card half">
+        <div class="card-h"><h2>Disturbance torques at 550 km</h2><span class="unit">N·m</span></div>
+        <div class="table-wrap"><table class="dist" id="distTable"></table></div>
+        <div id="distSummary"></div>
+      </div>
+      <div class="card full">
+        <div class="card-h"><h2>Structure — mass properties &amp; CDS compliance</h2><span class="unit">from cad/layout.json</span></div>
+        <div class="struct">
+          <div>
+            <dl class="state" id="massDl"></dl>
+            <h3>Inertia tensor about the CoM (g·m²)</h3>
+            <div class="table-wrap"><table class="inertia" id="inertiaTable"></table></div>
+          </div>
+          <div class="table-wrap"><table class="cds" id="cdsTable"></table></div>
+        </div>
       </div>
     </section>
 

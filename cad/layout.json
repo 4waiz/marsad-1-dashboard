@@ -1,0 +1,43 @@
+{
+  "note": "MARSAD-1 structural layout (Bilal Feroz, ADCS & structure). CAD frame in mm: origin at the -X-Y-Z rail corner, Z along the 3U long axis, -Z face = nadir/payload face, +Z = zenith (GPS patch, antenna hinges). Each part is modelled as a solid box (center, size) for mass properties. 'bom' is the exact component name in js/data.js; per-bom masses add up to qty x unit mass. Parts marked deployed are outside the stowed envelope on orbit.",
+  "frame": { "width": 100.0, "length": 340.5, "rail": 8.5, "bays": [[4, 112.5], [115.5, 226.5], [229.5, 336.5]], "protrusionsMm": { "-Z lens": 12, "+Z GPS patch": 4 } },
+  "parts": [
+    { "name": "Rail -X-Y", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 85, "center": [4.25, 4.25, 170.25], "size": [8.5, 8.5, 340.5] },
+    { "name": "Rail +X-Y", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 85, "center": [95.75, 4.25, 170.25], "size": [8.5, 8.5, 340.5] },
+    { "name": "Rail -X+Y", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 85, "center": [4.25, 95.75, 170.25], "size": [8.5, 8.5, 340.5] },
+    { "name": "Rail +X+Y", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 85, "center": [95.75, 95.75, 170.25], "size": [8.5, 8.5, 340.5] },
+    { "name": "Bottom plate (-Z, nadir)", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 30, "center": [50, 50, 2], "size": [96, 96, 4] },
+    { "name": "Top plate (+Z, zenith)", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 30, "center": [50, 50, 338.5], "size": [96, 96, 4] },
+    { "name": "Separator ring U1/U2", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 25, "center": [50, 50, 114], "size": [100, 100, 3] },
+    { "name": "Separator ring U2/U3", "bom": "3U Al-6061 Frame + PC/104 Stack", "sub": "Structure", "g": 25, "center": [50, 50, 228], "size": [100, 100, 3] },
+
+    { "name": "Solar array skin -X", "bom": "6V 1W Solar Panel", "sub": "EPS", "g": 37.5, "center": [2.1, 50, 170.25], "size": [1.8, 78, 328.5] },
+    { "name": "Solar array skin +X", "bom": "6V 1W Solar Panel", "sub": "EPS", "g": 37.5, "center": [97.9, 50, 170.25], "size": [1.8, 78, 328.5] },
+    { "name": "Solar array skin -Y", "bom": "6V 1W Solar Panel", "sub": "EPS", "g": 37.5, "center": [50, 2.1, 170.25], "size": [78, 1.8, 328.5] },
+    { "name": "Solar array skin +Y", "bom": "6V 1W Solar Panel", "sub": "EPS", "g": 37.5, "center": [50, 97.9, 170.25], "size": [78, 1.8, 328.5] },
+
+    { "name": "OV5640 camera", "bom": "OV5640 5MP Imaging Camera", "sub": "Payload", "g": 8, "center": [50, 38, 14], "size": [32, 32, 20] },
+    { "name": "AS7341 spectral sensor", "bom": "AS7341 11-Channel Spectral Sensor", "sub": "Payload", "g": 3, "center": [50, 73, 5.5], "size": [25, 18, 3] },
+
+    { "name": "2S Li-ion 18650 pack", "bom": "2S Li-ion 18650 Pack (7.4V 3400mAh)", "sub": "EPS", "g": 95, "center": [50, 50, 45], "size": [70, 37, 19] },
+    { "name": "Battery heater pad", "bom": "Kapton Battery Heater Pad", "sub": "Thermal", "g": 5, "center": [50, 50, 55], "size": [50, 50, 1] },
+    { "name": "DS18B20 battery probe", "bom": "BME280 + DS18B20 Temp Sensors", "sub": "Thermal", "g": 3, "center": [50, 29.5, 45], "size": [5, 4, 4] },
+    { "name": "MPPT charger + BMS", "bom": "CN3791 MPPT Charger + 2S BMS", "sub": "EPS", "g": 10, "center": [50, 50, 70], "size": [40, 25, 8] },
+    { "name": "Buck converter 5 V", "bom": "MP1584 Buck Converters (5V/3.3V)", "sub": "EPS", "g": 8, "center": [35, 50, 82], "size": [22, 17, 4] },
+    { "name": "Buck converter 3.3 V", "bom": "MP1584 Buck Converters (5V/3.3V)", "sub": "EPS", "g": 8, "center": [65, 50, 82], "size": [22, 17, 4] },
+    { "name": "INA219 power monitor", "bom": "INA219 Current/Voltage Monitor", "sub": "EPS", "g": 2, "center": [50, 50, 90], "size": [25, 22, 3] },
+
+    { "name": "ESP32-S3 OBC", "bom": "ESP32-S3 On-Board Computer", "sub": "CDHS", "g": 10, "center": [50, 50, 130], "size": [69, 26, 10] },
+    { "name": "BME280 board sensor", "bom": "BME280 + DS18B20 Temp Sensors", "sub": "Thermal", "g": 3, "center": [50, 72, 135], "size": [15, 12, 3] },
+    { "name": "MicroSD module", "bom": "MicroSD Storage Module (32 GB)", "sub": "CDHS", "g": 5, "center": [50, 50, 145], "size": [42, 24, 12] },
+    { "name": "ICM-20948 IMU", "bom": "ICM-20948 9-DoF IMU", "sub": "ADCS", "g": 3, "center": [50, 50, 170.25], "size": [25, 18, 3] },
+    { "name": "Magnetorquer board (3-axis)", "bom": "Magnetorquer Set (3-axis) + DRV8833", "sub": "ADCS", "g": 45, "center": [50, 50, 195], "size": [82, 82, 10] },
+
+    { "name": "SX1278 LoRa transceiver", "bom": "SX1278 LoRa 433 MHz Transceiver", "sub": "COMMS", "g": 5, "center": [50, 50, 260], "size": [17, 16, 3] },
+    { "name": "NEO-M8N GPS receiver", "bom": "u-blox NEO-M8N GPS Receiver", "sub": "ADCS", "g": 12, "center": [50, 50, 320], "size": [36, 26, 8] },
+    { "name": "Antenna hinge +X", "bom": "Deployable 433 MHz Tape Antenna", "sub": "COMMS", "g": 5, "center": [98, 50, 329], "size": [4, 8, 9] },
+    { "name": "Antenna hinge +Y", "bom": "Deployable 433 MHz Tape Antenna", "sub": "COMMS", "g": 5, "center": [50, 98, 329], "size": [8, 4, 9] },
+    { "name": "Tape element +X", "bom": "Deployable 433 MHz Tape Antenna", "sub": "COMMS", "g": 5, "center": [185, 50, 328.75], "size": [170, 4, 1], "deployed": true },
+    { "name": "Tape element +Y", "bom": "Deployable 433 MHz Tape Antenna", "sub": "COMMS", "g": 5, "center": [50, 185, 328.75], "size": [4, 170, 1], "deployed": true }
+  ]
+}

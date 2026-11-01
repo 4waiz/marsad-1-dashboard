@@ -35,7 +35,7 @@ export function sunEci(date) {
   return { v, ra: Math.atan2(v[1], v[0]) };
 }
 
-function gmst(date) {
+export function gmst(date) {
   const d = daysJ2000(date);
   return ((280.46061837 + 360.98564736629 * d) % 360) * D2R;
 }
@@ -53,6 +53,11 @@ export function stateAt(orbit, date) {
     orbit.a * (sO * cu + cO * su * ci),
     orbit.a * (su * si),
   ];
+  const vel = [
+    orbit.a * orbit.n * (-cO * su - sO * cu * ci),
+    orbit.a * orbit.n * (-sO * su + cO * cu * ci),
+    orbit.a * orbit.n * (cu * si),
+  ];
   const th = gmst(date);
   const ecef = [Math.cos(th) * r[0] + Math.sin(th) * r[1], -Math.sin(th) * r[0] + Math.cos(th) * r[1], r[2]];
   const rn = Math.hypot(...ecef);
@@ -64,7 +69,7 @@ export function stateAt(orbit, date) {
   const perp = Math.hypot(r[0] - s * sun.v[0], r[1] - s * sun.v[1], r[2] - s * sun.v[2]);
   const eclipse = s < 0 && perp < RE;
 
-  return { lat, lon, ecef, eclipse, orbitNumber: Math.floor(t / orbit.periodSec) + 1, orbitPhase: ((t % orbit.periodSec) + orbit.periodSec) % orbit.periodSec / orbit.periodSec };
+  return { lat, lon, ecef, r, v: vel, sun: sun.v, eclipse, orbitNumber: Math.floor(t / orbit.periodSec) + 1, orbitPhase: ((t % orbit.periodSec) + orbit.periodSec) % orbit.periodSec / orbit.periodSec };
 }
 
 export function elevationDeg(ecef, site) {
