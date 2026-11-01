@@ -1,0 +1,51 @@
+{
+ "slug": "marsad-1-reel",
+ "duration_s": 85.91,
+ "shorts": {
+  "title": "We built a satellite that spots red tides on the UAE coast | MARSAD-1 #shorts",
+  "description": "MARSAD-1 is Team Kanban's 3U CubeSat for SatForge UAE 2026: it spots harmful algal blooms early and only sends down alerts. Lab and orbit shots are AI visualisations of the planned build; the dashboard and Tinkercad clips are real recordings.\nLive dashboard: https://4waiz.github.io/marsad-1-dashboard\nSubscribe to @4waaiz for more.\n#cubesat #space #engineering"
+ },
+ "instagram": {
+  "caption": "We built a satellite that watches for red tides 🛰️\n\nIn 2008-09 a red tide sat on the UAE coast for months, killed fish and forced desalination plants to cut output. MARSAD-1 is our 3U CubeSat that spots the red water early, like a watchtower keeper, and only sends down alerts.\n\nTeam Kanban for SatForge UAE 2026: mission design, a Tinkercad circuit, a 3D model, a live mission-control dashboard, a poster, a 16-page report and a demo.\n\nLab and orbit shots are AI visualisations of the planned build. The flight firmware is written; the physical board is next.\nLive dashboard: 4waiz.github.io/marsad-1-dashboard\n\nFollow @4waaiz for more.\n\n#cubesat #satellite #spacetech #engineering #uae #redtide #algalbloom #remotesensing #satforge #esp32 #tinkercad #iot #dashboard #studentprojects #spaceengineering #softwareengineering"
+ },
+ "tiktok": {
+  "caption": "We built a satellite that spots red tides before they reach the UAE's desalination plants 🛰️ MARSAD-1 by Team Kanban for SatForge UAE 2026. Lab + orbit shots are AI visualisations; dashboard + Tinkercad clips are real recordings. #cubesat #space #engineering #uae #redtide #satellite #stem #techtok #learnontiktok"
+ },
+ "linkedin": {
+  "post": "For the SatForge UAE 2026 National University Satellite Engineering Challenge (Qualifiers), my team, Team Kanban, designed MARSAD-1 (مرصد, Arabic for \"observatory\"): a 3U CubeSat in a 550 km sun-synchronous orbit that watches the UAE coast for harmful algal blooms.\n\nWhy: in 2008-2009 a red tide lasted months, killed fish and forced desalination plants to cut output, and desalination supplies most of the UAE's drinking water. MARSAD-1 computes a chlorophyll index (NDCI) on board and only downlinks alerts.\n\nWhat we built: the mission design and budgets (3.92 W load vs 6.6 W generated, 0.845 of 4 kg, 1,420 of 3,000 AED), a Tinkercad circuit of the flight logic, a 3D model, a live mission-control dashboard with fault-injection tests, an A2 poster, a 16-page technical report, a demo video and a recorded presentation.\n\nHonest note: the lab and orbit shots in this reel are AI visualisations of the planned build. The ESP32-S3 flight firmware is written; the physical board is next.\n\nBuilt with Mohammad Umar (power/EPS), Bilal Feroz (attitude control, structure, 3D design) and Maryam Alnaqbi (payload, comms, bloom science), with me, Awaiz Ahmed, on mission lead, flight software and the dashboard.\n\nLive dashboard: https://4waiz.github.io/marsad-1-dashboard\nCode: https://github.com/4waiz/marsad-1-dashboard",
+  "word_count": 195
+ },
+ "honesty": {
+  "ai_visualisations": "Vidu AI clips (v1_bench, v3_antenna, v5_orbit_open, v6_orbit_close) and the ChatGPT stills they were made from; labelled AI VISUALISATION on screen",
+  "real_recordings": "dash_rec.mp4 (live dashboard + fault injection, sped up) and sim.mp4 (Tinkercad simulation, 1.5x); labelled REAL RECORDING on screen",
+  "renders": "cubesat_hero.png (Blender render)",
+  "illustrative": "the reflectance curves in the spectral-sensor card (shape only, labelled illustrative); the coast/plant and watchtower drawings",
+  "not_claimed": "the physical board is not built yet; the ESP32-S3 firmware is written"
+ },
+ "script": [
+  "A *red tide* can cut off the water you drink.",
+  "Most UAE drinking water comes from *desalination* plants.",
+  "In 2008, a red tide lasted *months*,",
+  "killed fish, and forced plants to cut output.",
+  "Picture a *watchtower* keeper on the coast.",
+  "He spots it *early*, before it reaches the intake.",
+  "We put that keeper in *orbit*.",
+  "Meet *Marsad One*, a CubeSat 550 kilometres up.",
+  "Its eyes compare red-edge and red light:",
+  "a *chlorophyll* index, computed on board.",
+  "It only sends down *alerts*, like the keeper's flag.",
+  "Power, mass and cost all fit, with *room* to spare.",
+  "We wired the flight logic as a *Tinkercad* circuit.",
+  "5 seconds after boot, the *antenna* deploys.",
+  "Each shot began as a rough *still*,",
+  "then became an AI visualisation.",
+  "The keeper's logbook is our live *mission control*.",
+  "We break it on purpose: low battery turns it *red*,",
+  "and a lost link goes stale, then recovers.",
+  "Plus a 3D model, a poster, a report and a *demo*.",
+  "Built by Team *Kanban*: Awaiz, Umar, Bilal and Maryam.",
+  "The real flight board is *next*.",
+  "Spot the red early...",
+  "*protect* the water."
+ ]
+}

@@ -25,11 +25,14 @@ Gulf of Oman, giving desalination plants, fisheries and coastal authorities earl
 | Final technical report (PDF) | https://4waiz.github.io/marsad-1-dashboard/report/final/MARSAD-1_Final_Technical_Report.pdf |
 | Final technical report (web) | https://4waiz.github.io/marsad-1-dashboard/report/final/ |
 | Final poster (Canva) | https://canva.link/66027wdcw95hqls |
+| Social reel (portrait, 86 s) | https://4waiz.github.io/marsad-1-dashboard/video/reel-social/marsad-1-reel.mp4 |
+| Reel on YouTube / Instagram / TikTok / LinkedIn | https://youtube.com/shorts/IT2QI0FCNoo · https://www.instagram.com/4waaiz/reel/DfNJYa2uLlq/ · https://www.tiktok.com/@kanbanstudios.ae/video/7703241154233371911 · https://www.linkedin.com/feed/update/urn:li:activity:7522697267234111490/ |
 
 Sources: `cad/` (STL generator + Blender render script), `poster/` (HTML poster + charts), `report/`, `video/` (kanban-motion reel, voiceover script, cue sheet).
 The poster hero image was generated with ChatGPT image generation; the simulation video narration is synthetic (Kokoro).
 In the prototype demo video, the lab and orbit shots are AI-generated visualisations of the planned hardware build (ChatGPT images animated with Vidu) and are labelled as such on screen. The Tinkercad simulation and the dashboard fault-injection tests are real screen recordings. Edit sources are in `video/demo/` (`build.sh`, `script.txt`, `cues.json`).
 The recorded presentation uses a synthetic narrator (Kokoro); its slides, script and build script are in `video/presentation/`.
+The social reel uses the same synthetic narrator and labels each shot on screen as an AI visualisation, a real recording or a Blender render; its captions are in `video/reel-social/meta.json`.
 
 ## What the dashboard shows
 
